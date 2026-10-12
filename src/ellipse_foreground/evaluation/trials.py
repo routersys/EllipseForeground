@@ -5,7 +5,6 @@ import numpy as np
 from ellipse_foreground.evaluation.scene import Scene
 from ellipse_foreground.geometry import Ellipse
 
-TRIALS_PER_SCENE = {"sprite1": 8, "sprite2": 10, "public0": 2, "public100": 2}
 TRIAL_SEED_OFFSET = 1000
 
 
