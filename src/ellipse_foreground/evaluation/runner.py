@@ -1,10 +1,11 @@
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 
 from ellipse_foreground.evaluation.experiments.ablation import ablation_record
 from ellipse_foreground.evaluation.experiments.comparison import comparison_record
-from ellipse_foreground.evaluation.experiments.context import SceneContext
+from ellipse_foreground.evaluation.experiments.context import SceneContext, Trial
 from ellipse_foreground.evaluation.experiments.models import model_records
 from ellipse_foreground.evaluation.experiments.resolution import WORK_WIDTHS, resolution_records
 from ellipse_foreground.evaluation.own import own_scenes
@@ -72,30 +73,41 @@ def run_scene_experiments(
     results: Path,
     selection: range,
     settings: Settings = DEFAULT_SETTINGS,
-) -> None:
-    context = SceneContext(scene, settings)
+) -> bool:
+    worked = False
+
+    @cache
+    def context() -> SceneContext:
+        return SceneContext(scene, settings)
+
+    @cache
+    def trials() -> list[Trial]:
+        return list(context().trials(spec.trials))
+
+    def store(experiment: str, name: str, produce: Callable[[], list[dict]]) -> None:
+        nonlocal worked
+        if scene.index not in finished_scenes(results / experiment, name):
+            append_records(output_path(results, experiment, name, selection), produce())
+            worked = True
+
     if "trials" in experiments:
-        trials = list(context.trials(spec.trials))
-        append_records(
-            output_path(results, "comparison", spec.name, selection),
-            (comparison_record(context, trial) for trial in trials),
-        )
-        append_records(
-            output_path(results, "ablation", spec.name, selection),
-            (ablation_record(context, trial) for trial in trials),
-        )
+        store("comparison", spec.name, lambda: [comparison_record(context(), trial) for trial in trials()])
+        store("ablation", spec.name, lambda: [ablation_record(context(), trial) for trial in trials()])
     if "models" in experiments:
         for model in SECONDARY_MODELS:
-            append_records(
-                output_path(results, "models", f"{spec.name}-{model}", selection),
-                model_records(context, ERROR_MODELS[model], spec.trials),
+            store(
+                "models",
+                f"{spec.name}-{model}",
+                lambda model=model: model_records(context(), ERROR_MODELS[model], spec.trials),
             )
     if "resolution" in experiments and spec.resolution_stride and scene.index % spec.resolution_stride == 0:
         for width in WORK_WIDTHS:
-            append_records(
-                output_path(results, "resolution", f"{spec.name}-{width}", selection),
-                resolution_records(scene, width, spec.trials),
+            store(
+                "resolution",
+                f"{spec.name}-{width}",
+                lambda width=width: resolution_records(scene, width, spec.trials),
             )
+    return worked
 
 
 def run_group(
@@ -106,12 +118,9 @@ def run_group(
     selection: range,
     settings: Settings = DEFAULT_SETTINGS,
 ) -> int:
-    finished = finished_scenes(results / "comparison", spec.name)
     processed = 0
     for scene in spec.scenes(data, selection):
-        if scene.index in finished and "trials" in experiments:
-            continue
-        run_scene_experiments(scene, spec, experiments, results, selection, settings)
-        processed += 1
-        print(f"{spec.name} scene {scene.index} {scene.name}", flush=True)
+        if run_scene_experiments(scene, spec, experiments, results, selection, settings):
+            processed += 1
+            print(f"{spec.name} scene {scene.index} {scene.name}", flush=True)
     return processed

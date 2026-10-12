@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from ellipse_foreground import Settings
 from ellipse_foreground.evaluation.results import append_records, finished_scenes, read_records, result_files
@@ -52,3 +53,25 @@ def test_resolution_runs_only_on_strided_scenes(tmp_path, monkeypatch):
     run_group(spec, tmp_path, tmp_path / "out", ["resolution"], range(0, 10**6), SETTINGS)
     assert sorted({index for index, _ in calls}) == [0, 3]
     assert {width for _, width in calls} == {128, 256, 384}
+
+
+def test_missing_experiments_of_a_finished_scene_are_run_again(tmp_path):
+    spec = GroupSpec("tiny", lambda data, selection: iter([make_scene(0)]), 2, None)
+    selection = range(0, 10**6)
+    run_group(spec, tmp_path, tmp_path / "out", ["trials"], selection, SETTINGS)
+    comparison = tmp_path / "out" / "comparison" / "tiny.jsonl"
+    before = comparison.read_text(encoding="utf-8")
+    (tmp_path / "out" / "ablation" / "tiny.jsonl").unlink()
+    assert run_group(spec, tmp_path, tmp_path / "out", ["trials"], selection, SETTINGS) == 1
+    assert (tmp_path / "out" / "ablation" / "tiny.jsonl").exists()
+    assert comparison.read_text(encoding="utf-8") == before
+
+
+def test_a_failing_producer_leaves_no_partial_records(tmp_path):
+    def produce():
+        yield {"scene": 0, "trial": 0}
+        raise RuntimeError
+
+    with pytest.raises(RuntimeError):
+        append_records(tmp_path / "a.jsonl", produce())
+    assert not (tmp_path / "a.jsonl").exists()

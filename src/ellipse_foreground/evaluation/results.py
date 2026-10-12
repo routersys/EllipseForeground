@@ -22,7 +22,7 @@ def finished_scenes(directory: Path, name: str) -> set[int]:
 
 
 def append_records(path: Path, records: Iterable[dict]) -> None:
+    text = "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8", newline="\n") as stream:
-        for record in records:
-            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+        stream.write(text)
