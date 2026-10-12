@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 
 import numpy as np
 
@@ -21,6 +22,18 @@ class Tree:
     @property
     def root(self) -> int:
         return self.node_count - 1
+
+    @cached_property
+    def left_nodes(self) -> list[int]:
+        return self.left.tolist()
+
+    @cached_property
+    def right_nodes(self) -> list[int]:
+        return self.right.tolist()
+
+    @cached_property
+    def parent_nodes(self) -> list[int]:
+        return self.parent.tolist()
 
 
 class DisjointSets:
@@ -47,11 +60,11 @@ def build_tree(work: np.ndarray) -> Tree:
     distances = edge_distances(work, first, second)
     order = np.argsort(distances, kind="stable")
     node_count = 2 * leaf_count - 1
-    left = np.full(node_count, -1, dtype=np.int64)
-    right = np.full(node_count, -1, dtype=np.int64)
-    parent = np.arange(node_count)
-    height = np.zeros(node_count)
-    area = np.ones(node_count)
+    left = [-1] * node_count
+    right = [-1] * node_count
+    parent = list(range(node_count))
+    height = [0.0] * node_count
+    area = [1.0] * node_count
     sets = DisjointSets(leaf_count)
     node_of_root = list(range(leaf_count))
     next_node = leaf_count
@@ -69,14 +82,22 @@ def build_tree(work: np.ndarray) -> Tree:
         sets.merge(root_a, root_b)
         node_of_root[root_a] = next_node
         next_node += 1
-    return Tree(leaf_count, left, right, parent, height, area)
+    return Tree(
+        leaf_count,
+        np.array(left, dtype=np.int64),
+        np.array(right, dtype=np.int64),
+        np.array(parent, dtype=np.int64),
+        np.array(height),
+        np.array(area),
+    )
 
 
 def accumulate(tree: Tree, own: np.ndarray) -> np.ndarray:
-    total = own.astype(np.float64)
+    total = own.astype(np.float64).tolist()
+    left, right = tree.left_nodes, tree.right_nodes
     for node in range(tree.leaf_count, tree.node_count):
-        total[node] += total[tree.left[node]] + total[tree.right[node]]
-    return total
+        total[node] += total[left[node]] + total[right[node]]
+    return np.array(total)
 
 
 def leaf_sums(tree: Tree, leaf_values: np.ndarray) -> np.ndarray:
