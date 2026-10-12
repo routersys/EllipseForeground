@@ -42,7 +42,7 @@
 
 処理の流れは次のとおりです。画像を幅256画素に縮め、隣り合う画素を色の差の小さい順に併合して、階層的な木を作ります。一方、楕円からは事前分布が、色、テクスチャ、パッチの三つの手がかりからは画素ごとの得点が求まります。この二つに境界項を加えた和を最大にする切断を、木の上の動的計画法で厳密に選ぶのが中心の処理です。選んだ領域を、縮める前の画像の大きさに合わせて整えたものが、返すアルファマットです。
 
-手法の詳細と評価の結果は、論文の原稿に書いてあります。原稿は`paper/source`にあり、PDFは`python -m paper build`で作れます。設定のデフォルト値は、論文の付録Aに挙げた定数です。
+手法の詳細と評価の結果は、論文に書いてあります。PDFは[`docs/ellipse-foreground-extraction.pdf`](docs/ellipse-foreground-extraction.pdf)にあり、原稿は`paper/source`にあります。設定のデフォルト値は、論文の付録Aに挙げた定数です。
 
 ---
 
@@ -62,7 +62,20 @@
 
 ## インストール方法
 
-リリースはまだありません。ソースから入れてください。
+ライブラリだけを使うときは、リリースのwheelを入れます。評価、論文、基準値との照合を使うときは、ソースから入れます。
+
+### wheelから入れる
+
+1. [Releases](https://github.com/routersys/EllipseForeground/releases/latest)ページから最新のパッケージ（`EllipseForeground_vX.Y.Z.zip`）をダウンロードします。
+2. 解凍すると出てくるwheel（`ellipse_foreground-X.Y.Z-py3-none-any.whl`）を、次のコマンドでインストールします。
+
+```console
+python -m pip install ellipse_foreground-X.Y.Z-py3-none-any.whl
+```
+
+wheelに入っているのは、`ellipse_foreground`のパッケージだけです。`harness`、`paper`、`data`、`results`は入っていません。
+
+### ソースから入れる
 
 1. リポジトリをクローンします。
 2. リポジトリの直下で、次のコマンドを実行します。
@@ -181,7 +194,7 @@ python -m harness --verify
 python -m paper build
 ```
 
-`results`と`data`を読み、図、表、本文を作り直して、`paper/build`に`paper.html`と`paper.pdf`を書き出します。表と本文の結果の数値は、すべて`results`と`data`が元です。
+`results`と`data`を読み、図、表、本文を作り直して、`paper/build`に`paper.html`と`paper.pdf`を書き出します。表と本文の結果の数値は、すべて`results`と`data`が元です。リポジトリの`docs/ellipse-foreground-extraction.pdf`は、開発者がこのコマンドの結果で更新します。
 
 | オプション | 内容 |
 |---|---|
@@ -209,6 +222,7 @@ python -m paper timing
 | `src/ellipse_foreground/evaluation` | 評価。場面の作成、楕円の誤差モデル、指標、実験の実行 |
 | `harness` | 基準値との照合 |
 | `paper` | 論文の原稿、表と図の作成、組版、計算時間の測定 |
+| `docs` | 論文のPDF |
 | `results` | 評価の結果と、計算時間の測定結果 |
 | `data` | 評価に使う画像と、立ち絵のデータ |
 | `tests` | テスト |
