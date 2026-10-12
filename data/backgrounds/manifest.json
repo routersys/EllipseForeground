@@ -1,0 +1,162 @@
+[
+  {
+    "id": 0,
+    "file": "bg00.jpg",
+    "sha256": "e68add6fb215f66acaddac45026894b2373a02e16c95f43e5987cbfc4134d134",
+    "label": "night city",
+    "title": "Quebec City night skylines (downtown 19).jpg",
+    "author": "Wilfredor",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Quebec_City_night_skylines_(downtown_19).jpg"
+  },
+  {
+    "id": 1,
+    "file": "bg01.jpg",
+    "sha256": "0ada14665f4b190d398a716ea78038c375e34436180107ed0801b8d133424f17",
+    "label": "sky at sunset",
+    "title": "Evening sunset skies.jpg",
+    "author": "Anonymous0006",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Evening_sunset_skies.jpg"
+  },
+  {
+    "id": 2,
+    "file": "bg02.jpg",
+    "sha256": "befd0b24a5e74725a4598bfbba6db82176893853fba3d4936ea88ecfe7305592",
+    "label": "mountain lake",
+    "title": "Clouds mirrored in a mountain lake (Unsplash).jpg",
+    "author": "Ales Krivec aleskrivec",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Clouds_mirrored_in_a_mountain_lake_(Unsplash).jpg"
+  },
+  {
+    "id": 3,
+    "file": "bg03.jpg",
+    "sha256": "032a868b987c867bc692bee36cf4c62bcd63a085a571c47e99e39749fc7982b3",
+    "label": "forest path",
+    "title": "Forest path along wall.jpg",
+    "author": "A.-K. D.",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Forest_path_along_wall.jpg"
+  },
+  {
+    "id": 4,
+    "file": "bg04.jpg",
+    "sha256": "93fc177b1869d2f1a0ae35fa043ec23ee78148ee2dbea068e4ec08c871e5f473",
+    "label": "nebula",
+    "title": "Iris Nebula.jpg",
+    "author": "Darko7411",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Iris_Nebula.jpg"
+  },
+  {
+    "id": 5,
+    "file": "bg05.jpg",
+    "sha256": "4cc7e28fc2a0aee2aacba7c0bb1908ed5092e126f856c6cecf29f71bb9399f59",
+    "label": "beach at sunset",
+    "title": "Sunset rolling waves.jpg",
+    "author": "Mingiki",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Sunset_rolling_waves.jpg"
+  },
+  {
+    "id": 6,
+    "file": "bg06.jpg",
+    "sha256": "b5f8a9fdb76abf9bdcb44d8f4ab8052739ac462e463bc059598daaf004432fdb",
+    "label": "snowy street",
+    "title": "Bike on a snowy street in Quebec City at night.jpg",
+    "author": "Wilfredor",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Bike_on_a_snowy_street_in_Quebec_City_at_night.jpg"
+  },
+  {
+    "id": 7,
+    "file": "bg07.jpg",
+    "sha256": "423f10625cc7896bb414dfd12c3a8051e04034ef90ca5cad4834d94b75077df2",
+    "label": "Mount Fuji",
+    "title": "Mount Fuji at sunset, March 2025.jpg",
+    "author": "Romain Guy from San Francisco, USA",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Mount_Fuji_at_sunset,_March_2025.jpg"
+  },
+  {
+    "id": 8,
+    "file": "bg08.jpg",
+    "sha256": "7f994a9e9e691b70b188e7f76f0abffc03b54a356d193a4d9e22db1329b65df6",
+    "label": "Dughet painting",
+    "title": "Imaginary Landscape MET DP225500.jpg",
+    "author": "Gaspard Dughet",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Imaginary_Landscape_MET_DP225500.jpg"
+  },
+  {
+    "id": 9,
+    "file": "bg09.jpg",
+    "sha256": "6c651a4b1bb9b6fbd924ebaf297ab5e3670122a9bffb642300a8643f64af2332",
+    "label": "Guardi painting",
+    "title": "Fantastic Landscape MET DT9352.jpg",
+    "author": "Francesco Guardi",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fantastic_Landscape_MET_DT9352.jpg"
+  },
+  {
+    "id": 10,
+    "file": "bg10.jpg",
+    "sha256": "c791b945ba8c670fd8735f3658a4da79811902f11f51ba0fab8189de4689027d",
+    "label": "Rousseau painting",
+    "title": "A River Landscape MET DP274261.jpg",
+    "author": "Théodore Rousseau",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:A_River_Landscape_MET_DP274261.jpg"
+  },
+  {
+    "id": 11,
+    "file": "bg11.jpg",
+    "sha256": "810cf4584cfece0c4ead282951bbc5f32540f0112680260deec29583f1f32165",
+    "label": "Duncanson painting",
+    "title": "Landscape with Cows Watering in a Stream MET DT10837.jpg",
+    "author": "Robert Seldon Duncanson",
+    "license": "CC0-1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Landscape_with_Cows_Watering_in_a_Stream_MET_DT10837.jpg"
+  },
+  {
+    "id": 12,
+    "file": "bg12.jpg",
+    "sha256": "c26918fc2d2884c798313954afeabca188b398aaafe8bd2842e19dc26b341102",
+    "label": "school hallway (morning)",
+    "title": "School Hallway (morning)",
+    "author": "Iletora",
+    "license": "CC0-1.0",
+    "source": "https://iletora.itch.io/school-hallway"
+  },
+  {
+    "id": 13,
+    "file": "bg13.jpg",
+    "sha256": "ad84e9028d113246454e51b185dfa1eaf16b666186a1f7863b992665c9442ac5",
+    "label": "school hallway (evening)",
+    "title": "School Hallway (evening)",
+    "author": "Iletora",
+    "license": "CC0-1.0",
+    "source": "https://iletora.itch.io/school-hallway"
+  },
+  {
+    "id": 14,
+    "file": "bg14.jpg",
+    "sha256": "cab4752907c6511dc93d837b2b059daad475cf9cd6dadbd8dc6b48c821efd233",
+    "label": "classroom",
+    "title": "Classroom 002",
+    "author": "Midnight68",
+    "license": "CC0-1.0",
+    "source": "https://opengameart.org/content/classroom-002"
+  },
+  {
+    "id": 15,
+    "file": "bg15.jpg",
+    "sha256": "6ee0699c15914cd208d7c308a3e40099e76e0f6f8a251abb3fa0cd6cb54ef3b5",
+    "label": "classroom (windows)",
+    "title": "Classroom 002",
+    "author": "Midnight68",
+    "license": "CC0-1.0",
+    "source": "https://opengameart.org/content/classroom-002"
+  }
+]

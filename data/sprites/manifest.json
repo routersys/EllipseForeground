@@ -1,0 +1,155 @@
+[
+  {
+    "id": "breezy_oak",
+    "file": "breezy_oak.png",
+    "sha256": "4e4942de2ccb3934ee7dbcd6643cbb52a4811298d63eed630a20cfe04bf5134a",
+    "author": "Breezy",
+    "title": "Visual Novel Sprites!",
+    "license": "CC0-1.0",
+    "source": "https://breezy-the-cat.itch.io/visual-novel-sprites"
+  },
+  {
+    "id": "breezy_cyrus1",
+    "file": "breezy_cyrus1.png",
+    "sha256": "ea0bd20632a0edebb36b6cb85b5681ef76d245e25c7466448aa69a79d20f26fb",
+    "author": "Breezy",
+    "title": "Visual Novel Sprites!",
+    "license": "CC0-1.0",
+    "source": "https://breezy-the-cat.itch.io/visual-novel-sprites"
+  },
+  {
+    "id": "breezy_cyrus2",
+    "file": "breezy_cyrus2.png",
+    "sha256": "1848c50c292e02a48f4b37d867b59363d6eb970f7f442a87d32adefa62fec140",
+    "author": "Breezy",
+    "title": "Visual Novel Sprites!",
+    "license": "CC0-1.0",
+    "source": "https://breezy-the-cat.itch.io/visual-novel-sprites"
+  },
+  {
+    "id": "breezy_john",
+    "file": "breezy_john.png",
+    "sha256": "e3f0d7365d973fd0e74615655a875637fc6bb1e77de1b959e49919b6dfc7109e",
+    "author": "Breezy",
+    "title": "Visual Novel Sprites!",
+    "license": "CC0-1.0",
+    "source": "https://breezy-the-cat.itch.io/visual-novel-sprites"
+  },
+  {
+    "id": "breezy_lyn",
+    "file": "breezy_lyn.png",
+    "sha256": "8c2eecc9693b10cfde453a9e47be558edf9cbf0ba5335b4f5adfdecb1549b482",
+    "author": "Breezy",
+    "title": "Visual Novel Sprites!",
+    "license": "CC0-1.0",
+    "source": "https://breezy-the-cat.itch.io/visual-novel-sprites"
+  },
+  {
+    "id": "cyanea1_casual",
+    "file": "cyanea1_casual.png",
+    "sha256": "babbd6c92b262c068fc2ba0490dfbad91085fd7c92afceddfeb714bbd681e262",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set1-vnsprites"
+  },
+  {
+    "id": "cyanea1_prom",
+    "file": "cyanea1_prom.png",
+    "sha256": "6f41e97a02c7e0591661b40ccc36f746dc7a85afca852f232f686f5f13b88cc4",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set1-vnsprites"
+  },
+  {
+    "id": "cyanea1_uniform",
+    "file": "cyanea1_uniform.png",
+    "sha256": "510d821b9d64aad7cb2cebc7c75a87e1c5b6eefc295c402b3f8228795207bc49",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set1-vnsprites"
+  },
+  {
+    "id": "cyanea2_casual",
+    "file": "cyanea2_casual.png",
+    "sha256": "25dc692a12668d0cfe1610f1c1fd525ca717f459a3d5fd59e6e0839e06f0c3ee",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set2-vnsprites"
+  },
+  {
+    "id": "cyanea2_casual2",
+    "file": "cyanea2_casual2.png",
+    "sha256": "8b531d056939211bfff35295c4ab76c4322f4ac0a35ee7f4beea2a7cd0647a60",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set2-vnsprites"
+  },
+  {
+    "id": "cyanea2_uniform",
+    "file": "cyanea2_uniform.png",
+    "sha256": "8d675759f3ab9fa175607ce57fd57d184c56cb7af5be2c5d50d4b9d1a4ef6662",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set2-vnsprites"
+  },
+  {
+    "id": "cyanea4_casual",
+    "file": "cyanea4_casual.png",
+    "sha256": "33e1fd255baf0c73c4ba278301c92baea0cf3fb25955da9b61077049dd6adb90",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set4-vnsprites"
+  },
+  {
+    "id": "cyanea5_outfit",
+    "file": "cyanea5_outfit.png",
+    "sha256": "9f2fedcb8a764d273ccef156b81b6dcb67a93b365ab124e9ac096aa1c2a3341f",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set5-vnsprites"
+  },
+  {
+    "id": "cyanea5_uniform",
+    "file": "cyanea5_uniform.png",
+    "sha256": "55b1dd555f7ca8ae65641827c1e78c68d83590c848bd1babb7ba379f1c72b79a",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set5-vnsprites"
+  },
+  {
+    "id": "cyanea6_casual",
+    "file": "cyanea6_casual.png",
+    "sha256": "b5d95c0cc6655dfadf00c924a7792ff67201a582135fcf508cf2295787b9a51a",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set6-vnsprites"
+  },
+  {
+    "id": "cyanea7_casual",
+    "file": "cyanea7_casual.png",
+    "sha256": "68c78614874f2eaec9f5da5770b018e3d38dd14d02a009b9ac209407e4e6c607",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set7-vnsprites"
+  },
+  {
+    "id": "cyanea8_casual",
+    "file": "cyanea8_casual.png",
+    "sha256": "1d4954509e6cb62b18bdae9ab41ead455a274ede62958b97134a4014571b3b0f",
+    "author": "4cher (Cyanea)",
+    "title": "[FREE-TO-USE] Visual Novel Sprites",
+    "license": "CC-BY-4.0",
+    "source": "https://iam-cyanea.itch.io/set8-vnsprites"
+  }
+]
