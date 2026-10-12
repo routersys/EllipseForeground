@@ -237,8 +237,11 @@ python -m paper timing
 |---|---|---|---|
 | `data/own` | 立ち絵1と立ち絵2の前景の色とアルファマット | [独自の利用条件](data/own/LICENSE.txt)。AIの学習への利用は禁止です | routersys |
 | `data/sprites`の`breezy_*` | 立ち絵5枚 | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.ja) | Breezy氏の「Visual Novel Sprites!」 https://breezy-the-cat.itch.io/visual-novel-sprites |
-| `data/sprites`の`cyanea*` | 立ち絵12枚 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja) | 4cher氏（Cyanea）の「[FREE-TO-USE] Visual Novel Sprites」のセット1、2、4、5、6、7、8。各セットのページは https://iam-cyanea.itch.io/set1-vnsprites のように、末尾が`set`と番号と`-vnsprites`です |
+| `data/sprites`の`cyanea*`（`cyanea8_casual`を除く） | 立ち絵11枚 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja) | 4cher氏（Cyanea）の「[FREE-TO-USE] Visual Novel Sprites」のセット1、2、4、5、6、7。各セットのページは https://iam-cyanea.itch.io/set1-vnsprites のように、末尾が`set`と番号と`-vnsprites`です |
+| `data/sprites`の`cyanea8_casual` | 立ち絵1枚 | ライセンスの表示なし。作者の説明文の条件による | 4cher氏（Cyanea）の同じ題名のセット8 https://iam-cyanea.itch.io/set8-vnsprites |
 | `data/backgrounds` | 背景16枚 | CC0 1.0 | 作者と出典のページは`data/backgrounds/manifest.json`に書いてあります |
+
+セット8の販売ページには、ライセンスの表示がありません。説明文は、商用利用を許し、クレジットを不要とし、自作と主張することと販売することをしないよう求めています。再配布についての記述はありません。セット1、2、4、6、7の説明文も、素材を販売しないよう求めています。Breezy氏のページには、素材を生成AIに使わないでほしいという依頼と、使ったときは知らせてほしいという依頼があります。
 
 立ち絵1と立ち絵2は、同じキャラクターで髪型だけが異なります。`data/own`にあるのは、動画編集ソフトの書き出しから復元した、キャラクターのアルファマットと前景の色だけです。背景の画素は含まず、書き出しそのものは、背景を再配布できないため収録していません。評価の場面の背景は、`data/backgrounds`のCC0の画像です。
 
@@ -267,7 +270,7 @@ python -m paper timing
 - 基準値の環境: `harness/golden.json`は、Windows、Python 3.13.1、NumPy 2.5.4、SciPy 1.18.1、Pillow 12.3.0で書いた基準値です。環境が違うと、出力のハッシュが一致しないことがあります。`--verify`は、環境が違うときにその旨を警告します。
 - メモリ: 評価は、1プロセスで約1.2GBを確保します。測定は、Windows 11で、縮小する幅が256画素のときです。複数のプロセスを並行して実行するときは、メモリの空きを確かめてください。評価を5本並行し、ほかの重い処理も動かしたところ、32GBのメモリで、メモリ不足で止まったことがあります。
 - 図のフォント: 図の日本語は、BIZ UDPGothicで描きます。入っていない環境では、日本語が表示されません。
-- 帰属の表示: `data/sprites`のCyaneaの画像（CC BY 4.0）を使うときは、作者名、ライセンスの名前、ライセンスへのリンクを示してください。画像を変更したときは、変更したことも示してください。立ち絵1と立ち絵2のデータを結果の図に載せるときは、`data/own/LICENSE.txt`に従って、著作者のroutersysとリポジトリのURLを示してください。
+- 帰属の表示: `data/sprites`のCyaneaの画像のうち、CC BY 4.0のもの（`cyanea8_casual`以外）を使うときは、作者名、ライセンスの名前、ライセンスへのリンクを示してください。画像を変更したときは、変更したことも示してください。立ち絵1と立ち絵2のデータを結果の図に載せるときは、`data/own/LICENSE.txt`に従って、著作者のroutersysとリポジトリのURLを示してください。
 
 ---
 
@@ -306,7 +309,8 @@ python -m paper timing
 | 素材 | 用途 | ライセンス | 著作権表示 |
 |---|---|---|---|
 | Breezy氏の「Visual Novel Sprites!」 | 評価に使う立ち絵 | CC0 1.0 | 著作権表示は不要です |
-| 4cher氏（Cyanea）の「[FREE-TO-USE] Visual Novel Sprites」 | 評価に使う立ち絵 | CC BY 4.0 | 4cher (Cyanea) |
+| 4cher氏（Cyanea）の「[FREE-TO-USE] Visual Novel Sprites」のセット1、2、4、5、6、7 | 評価に使う立ち絵 | CC BY 4.0 | 4cher (Cyanea) |
+| 4cher氏（Cyanea）の「[FREE-TO-USE] Visual Novel Sprites」のセット8 | 評価に使う立ち絵 | ライセンスの表示なし。作者の説明文の条件による | 4cher (Cyanea) |
 | 背景16枚 | 評価に使う背景 | CC0 1.0 | 著作権表示は不要です |
 
 NumPy、SciPy、Pillow、Matplotlibは同梱していません。インストールの際には、それぞれのライセンスが適用されます。
