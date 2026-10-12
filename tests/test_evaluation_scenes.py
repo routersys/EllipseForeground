@@ -84,6 +84,16 @@ def test_public_scenes_are_deterministic_and_complete(tmp_path):
     assert first[0].group == "public0"
 
 
+def test_a_selection_builds_only_the_chosen_scenes_with_unchanged_content(tmp_path):
+    root = write_data_root(tmp_path)
+    everything = list(public_scenes(root, 0.0, per_sprite=2))
+    chosen = list(public_scenes(root, 0.0, per_sprite=2, selection=range(2, 4)))
+    assert [scene.index for scene in chosen] == [2, 3]
+    for scene in chosen:
+        assert scene.name == everything[scene.index].name
+        assert np.array_equal(scene.texture_source, everything[scene.index].texture_source)
+
+
 def test_public_scenes_keep_placement_across_transfer_strengths(tmp_path):
     root = write_data_root(tmp_path)
     plain = list(public_scenes(root, 0.0, per_sprite=2))

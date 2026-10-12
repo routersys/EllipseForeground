@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -65,20 +65,49 @@ def quantize_unit(values: np.ndarray) -> np.ndarray:
     return np.clip(np.rint(values * 255.0), 0, 255).astype(np.uint8)
 
 
-def public_scenes(
-    data_root: Path, strength: float, seed: int = PUBLIC_SEED, per_sprite: int = SCENES_PER_SPRITE
+def collection_scenes(
+    sprites: Sequence[tuple[str, Path]],
+    backgrounds: Sequence[Path],
+    group: str,
+    strength: float,
+    seed: int,
+    grounded: bool,
+    selection: range | None = None,
+    per_sprite: int = SCENES_PER_SPRITE,
 ) -> Iterator[Scene]:
-    backgrounds = background_paths(data_root)
     rng = np.random.default_rng(seed)
-    group = f"public{round(strength * 100)}"
     index = 0
-    for identifier, path in sprite_files(data_root):
+    for identifier, path in sprites:
         sprite = trimmed_sprite(path)
         for variant in range(per_sprite):
-            placement = replace(draw_placement(rng, len(backgrounds)), bottom_margin=0.0)
+            placement = draw_placement(rng, len(backgrounds))
+            wanted = selection is None or index in selection
+            current, index = index, index + 1
+            if not wanted:
+                continue
+            if grounded:
+                placement = replace(placement, bottom_margin=0.0)
             background = load_covering(backgrounds[placement.background], CANVAS_WIDTH, CANVAS_HEIGHT)
             color, alpha = place_sprite(sprite, placement, background, strength)
             composite = quantize_unit(alpha[..., None] * color + (1 - alpha[..., None]) * background)
             name = f"{identifier}_bg{placement.background}_{variant}"
-            yield scene_from_composite(name, group, index, composite, quantize_unit(alpha).astype(np.float32) / 255.0)
-            index += 1
+            yield scene_from_composite(name, group, current, composite, quantize_unit(alpha).astype(np.float32) / 255.0)
+
+
+def public_scenes(
+    data_root: Path,
+    strength: float,
+    seed: int = PUBLIC_SEED,
+    per_sprite: int = SCENES_PER_SPRITE,
+    selection: range | None = None,
+) -> Iterator[Scene]:
+    return collection_scenes(
+        sprite_files(data_root),
+        background_paths(data_root),
+        f"public{round(strength * 100)}",
+        strength,
+        seed,
+        True,
+        selection,
+        per_sprite,
+    )
