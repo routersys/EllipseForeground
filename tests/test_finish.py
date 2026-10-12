@@ -1,6 +1,7 @@
 import numpy as np
 
 from ellipse_foreground.finish import (
+    Finisher,
     bilinear_upsample,
     finish,
     guided_filter,
@@ -62,6 +63,17 @@ def test_guided_filter_reproduces_a_source_that_is_linear_in_the_guide():
     guide = random_work(12, 14, seed=5)
     source = 0.5 * guide[..., 0] + 0.2
     assert np.allclose(guided_filter(guide, source, 2, 1e-9), source, atol=1e-4)
+
+
+def test_a_finisher_keeps_no_state_between_masks():
+    image, mask = split_image()
+    small = image[::2, ::2]
+    other = np.roll(mask, 3, axis=1)
+    finisher = Finisher(small, image, FinishSettings())
+    first = finisher(mask)
+    finisher(other)
+    assert np.array_equal(finisher(mask), first)
+    assert np.array_equal(finish(small, image, other, FinishSettings()), finisher(other))
 
 
 def test_finish_returns_an_alpha_in_the_unit_interval_with_the_image_shape():

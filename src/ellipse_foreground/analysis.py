@@ -9,7 +9,7 @@ from ellipse_foreground.cues.patch import choose_patch_samples, patch_evidence, 
 from ellipse_foreground.cues.sampling import pixel_priorities
 from ellipse_foreground.cues.texture import TextureFeatures, texture_evidence, texture_features
 from ellipse_foreground.cut import optimal_cut
-from ellipse_foreground.finish import finish
+from ellipse_foreground.finish import Finisher
 from ellipse_foreground.geometry import Ellipse
 from ellipse_foreground.graph_cut import graph_cut_labels
 from ellipse_foreground.prior import ellipse_prior
@@ -109,8 +109,12 @@ class Analysis:
     def graph_cut(self, scores: np.ndarray) -> np.ndarray:
         return graph_cut_labels(self.work, scores, self.settings.graph_cut)
 
+    @cached_property
+    def finisher(self) -> Finisher:
+        return Finisher(self.small, self.image, self.settings.finish)
+
     def finish(self, mask: np.ndarray) -> np.ndarray:
-        return finish(self.small, self.image, mask.astype(np.float32), self.settings.finish)
+        return self.finisher(mask.astype(np.float32))
 
     def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR) -> np.ndarray:
         regions = self.regions(ellipse)
