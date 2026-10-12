@@ -1,0 +1,89 @@
+name: 不具合の報告
+description: エラーが出る、結果がおかしい、READMEと違う動きをする、といった不具合を報告します。
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        脆弱性はここに書かず、リポジトリのセキュリティポリシーに従って非公開で報告してください。
+        READMEと実際の動きが違い、文書のほうが誤りだと考えるときは、文書の不備を使ってください。
+
+  - type: input
+    id: version
+    attributes:
+      label: バージョン
+      description: 使っているリリースのバージョンか、コミットのハッシュを書いてください。
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 実行環境
+      description: |
+        PythonとNumPy、SciPy、Pillowのバージョン、OSを書いてください。バージョンは、次のコマンドで確かめられます。
+        `python -c "import sys, numpy, scipy, PIL; print(sys.version, numpy.__version__, scipy.__version__, PIL.__version__)"`
+      placeholder: Python 3.13.1、NumPy 2.5.4、SciPy 1.18.1、Pillow 12.3.0、Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動き
+      description: 何が起きると考えたか。READMEや論文に根拠があれば、その箇所も書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動き
+      description: 実際に起きたこと。エラーが出たときは、スタックトレースを含めて、内容を省略せずに貼ってください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現の手順
+      description: |
+        不具合が起きるまでの操作を、番号を付けて書いてください。使った画像と楕円、変えた`Settings`の項目と値も書いてください。
+        画像は添付できます。添付したファイルは誰でも見られます。公開できる画像だけを添付してください。
+      placeholder: |
+        1. 画像を読み込む
+        2. Analysisを作る
+        3. 楕円を渡してextractを呼ぶ
+        4. 不具合が起きる
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 起きる頻度
+      description: ときどき起きるときは、何回試して何回起きたかを、下の「その他」の欄に書いてください。
+      options:
+        - 毎回起きる
+        - ときどき起きる
+        - 一度だけ起きた
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: その他
+      description: 関係すると思われることを書いてください。
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 報告の前に
+      options:
+        - label: 最新のリリース、またはリリースが無いときはmainの最新のコミットを使っています。
+          required: true
+        - label: 既存のIssueを検索し、同じ報告が無いことを確かめました。
+          required: true
