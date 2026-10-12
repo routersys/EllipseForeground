@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+
 from harness.arguments import HarnessArguments, HarnessMode
 from harness.comparison import ImageDifference, compare_arrays
 from harness.golden import Golden, GoldenCase, HarnessError, current_environment, digest
