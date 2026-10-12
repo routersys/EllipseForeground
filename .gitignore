@@ -8,5 +8,7 @@ build/
 dist/
 
 /cache/
+/logs/
+/harness-output/
 /downloads/
 /results/*.tmp

@@ -20,7 +20,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra -m 'not golden'"
+markers = ["golden: ゴールデン検証。実行に数分かかるので -m golden で選ぶ"]
 
 [tool.ruff]
 line-length = 120
@@ -29,3 +30,4 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "N", "C4", "ERA"]
+ignore = ["RUF001", "RUF002", "RUF003"]
