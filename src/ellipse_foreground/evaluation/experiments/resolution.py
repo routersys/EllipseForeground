@@ -7,7 +7,6 @@ from ellipse_foreground.evaluation.trials import draw_trials
 from ellipse_foreground.settings import DEFAULT_SETTINGS
 
 WORK_WIDTHS = (128, 256, 384)
-SPARSE_SCENE_STRIDE = 3
 
 
 def resolution_records(scene: Scene, width: int, count: int) -> list[dict]:

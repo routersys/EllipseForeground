@@ -23,17 +23,17 @@ class GroupSpec:
     name: str
     scenes: Callable[[Path, range | None], Iterator[Scene]]
     trials: int
-    resolution: bool
+    resolution_stride: int | None
 
 
 def own_group(name: str) -> GroupSpec:
     trials = 8 if name == "sprite1" else 10
-    return GroupSpec(name, lambda data, selection: own_scenes(data, name), trials, True)
+    return GroupSpec(name, lambda data, selection: own_scenes(data, name), trials, 1)
 
 
 def public_group(strength: float) -> GroupSpec:
     name = f"public{round(strength * 100)}"
-    return GroupSpec(name, lambda data, selection: public_scenes(data, strength, selection=selection), 2, False)
+    return GroupSpec(name, lambda data, selection: public_scenes(data, strength, selection=selection), 2, None)
 
 
 GROUPS = {
@@ -71,7 +71,7 @@ def run_scene_experiments(
                 output_path(results, "models", f"{spec.name}-{model}", selection),
                 model_records(context, ERROR_MODELS[model], spec.trials),
             )
-    if "resolution" in experiments and spec.resolution:
+    if "resolution" in experiments and spec.resolution_stride and scene.index % spec.resolution_stride == 0:
         for width in WORK_WIDTHS:
             append_records(
                 output_path(results, "resolution", f"{spec.name}-{width}", selection),

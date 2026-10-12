@@ -32,9 +32,23 @@ def test_output_path_names_partitions(tmp_path):
 
 
 def test_run_group_writes_records_and_resumes(tmp_path):
-    spec = GroupSpec("tiny", lambda data, selection: iter([make_scene(0), make_scene(1)]), 2, False)
+    spec = GroupSpec("tiny", lambda data, selection: iter([make_scene(0), make_scene(1)]), 2, None)
     selection = range(0, 10**6)
     assert run_group(spec, tmp_path, tmp_path / "out", ["trials"], selection, SETTINGS) == 2
     records = read_records(tmp_path / "out" / "comparison", "tiny")
     assert {record["scene"] for record in records} == {0, 1}
     assert run_group(spec, tmp_path, tmp_path / "out", ["trials"], selection, SETTINGS) == 0
+
+
+def test_resolution_runs_only_on_strided_scenes(tmp_path, monkeypatch):
+    calls = []
+
+    def fake_records(scene, width, count):
+        calls.append((scene.index, width))
+        return [{"scene": scene.index, "trial": 0, "width": width}]
+
+    monkeypatch.setattr("ellipse_foreground.evaluation.runner.resolution_records", fake_records)
+    spec = GroupSpec("tiny", lambda data, selection: iter([make_scene(index) for index in range(4)]), 2, 3)
+    run_group(spec, tmp_path, tmp_path / "out", ["resolution"], range(0, 10**6), SETTINGS)
+    assert sorted({index for index, _ in calls}) == [0, 3]
+    assert {width for _, width in calls} == {128, 256, 384}
