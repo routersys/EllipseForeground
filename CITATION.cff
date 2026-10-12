@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: このリポジトリを引用するときは、次の情報を使ってください。
+title: EllipseForeground
+type: software
+version: 1.0.0
+authors:
+  - name: routersys
+repository-code: https://github.com/routersys/EllipseForeground
+license: BSD-3-Clause
+abstract: 楕円で大まかに指定した範囲から、画像の前景のアルファマットを求めるPythonのライブラリです。論文「楕円による大まかな指定からの前景抽出」の参照実装で、評価のコードと論文の原稿を収録しています。
+keywords:
+  - 前景抽出
+  - アルファマット
+  - 階層的領域分割
+  - 単連結法
+  - 動的計画法
