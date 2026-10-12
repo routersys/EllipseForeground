@@ -12,3 +12,6 @@ dist/
 /harness-output/
 /downloads/
 /results/*.tmp
+
+[Bb]in/
+[Oo]bj/
