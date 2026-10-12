@@ -1,0 +1,35 @@
+<h2 id="s:app" class="appx">付録A　定数の一覧</h2>
+<p class="noindent">本稿で用いた定数を<ref k="t:params"></ref>に示す。「決め方」の列の「既定」は、本稿の実験の前に行った予備実験で定め、主な結果では変更していない値である。「選択」は、本稿の設計用の画像（立ち絵1と17体）の実験で、候補の中から選んだ値である。予備実験には、17体に近い構成の画像と人工的な合成画像を使っており、本稿の評価に使った集合の一部を含む。立ち絵2と公開素材だけが、既定の値の決定にも、選択にも使っていない集合である。</p>
+<div class="table-block long">
+<div class="tcap" id="t:params"><span class="no">表</span>定数の一覧。</div>
+<table class="t params"><thead><tr><th class="l">項目</th><th class="l">定数</th><th>値</th><th>決め方</th></tr></thead><tbody>
+<tr><td class="l" rowspan="2">作業画像</td><td class="l">幅 \(L\)</td><td>256</td><td>既定（<ref k="s:abl_res"></ref>）</td></tr>
+<tr><td class="l">範囲の正規化</td><td>2、98パーセンタイル、下限0.04、上限1.5</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="3">事前分布</td><td class="l">境界の幅 \(\kappa\)</td><td>0.35</td><td>既定</td></tr>
+<tr><td class="l">内側の縮小率 \(\gamma\)</td><td>0.35</td><td>既定（<ref k="s:abl_prior"></ref>）</td></tr>
+<tr><td class="l">楕円の倍率 \(a\)</td><td>0.85、1、1.15</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="2">標本</td><td class="l">中心側 \(\mathcal K\)</td><td>\(\rho<0.5\)</td><td>既定</td></tr>
+<tr><td class="l">外側 \(\mathcal B\)</td><td>\(\rho>1.3\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="4">境界項</td><td class="l">係数 \(\lambda_0\)</td><td>14/3</td><td>既定</td></tr>
+<tr><td class="l">弱さの \(\sigma\)</td><td>0.05、0.1の平均</td><td>既定</td></tr>
+<tr><td class="l">強さの倍率 \(m\)</td><td><<V:m_tree>></td><td>選択</td></tr>
+<tr><td class="l">解像度の補正</td><td>\(L/128\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="2">手がかり（共通）</td><td class="l">対数尤度比の打ち切り</td><td>±2（\(\ln\) 単位）、2で割る</td><td>既定</td></tr>
+<tr><td class="l">得点の範囲</td><td>\([-1,1]\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="2">色</td><td class="l">ヒストグラム</td><td>8×8×8、3×3×3で平滑化、\(10^{-5}\)</td><td>既定</td></tr>
+<tr><td class="l">配合の重み（固定配合）</td><td>0.25</td><td>選択</td></tr>
+<tr class="sep"><td class="l" rowspan="5">パッチ</td><td class="l">窓</td><td>3×3（27次元）</td><td>既定</td></tr>
+<tr><td class="l">標本数</td><td>中心側3000以下、外側は中心側の8倍以下（下限20）</td><td>既定</td></tr>
+<tr><td class="l">除外する範囲</td><td>\(\lVert p-q\rVert_\infty\le2\)</td><td>既定</td></tr>
+<tr><td class="l">係数 \(\kappa_{\mathrm{pat}}\)</td><td>4</td><td>既定</td></tr>
+<tr><td class="l">配合の重み</td><td>0.3</td><td>選択</td></tr>
+<tr class="sep"><td class="l" rowspan="3">テクスチャ</td><td class="l">平坦の閾値</td><td>\(m(p)\le2\)</td><td>既定</td></tr>
+<tr><td class="l">差の上限、平滑化</td><td>32、3×3の平均</td><td>既定</td></tr>
+<tr><td class="l">ヒストグラム、配合の重み</td><td>6×6、1.0</td><td>既定</td></tr>
+<tr class="sep"><td class="l">信頼度に基づく重み</td><td class="l">基準の重みと式</td><td>0.5、\(\max(0,1-\mathrm{BC}_{\mathrm{col}}/\mathrm{BC}_{\mathrm{tex}})\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l" rowspan="3">縁の仕上げ</td><td class="l">\(\sigma_r\)</td><td>0.12</td><td>既定</td></tr>
+<tr><td class="l">色の補正</td><td>32段階、打ち切り±6、係数6と3</td><td>既定</td></tr>
+<tr><td class="l">ガイデッドフィルタ</td><td>半径2、\(\epsilon=10^{-3}\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l">描画と評価</td><td class="l">円板の半径、\(\varepsilon\)</td><td>12画素（幅640）、\(10^{-4}\)</td><td>既定</td></tr>
+<tr class="sep"><td class="l">グラフカット</td><td class="l">境界の重みと \(\lambda\)</td><td>式の \(\omega_e\)、\(\lambda=<<V:lam_gc>>\)</td><td>選択</td></tr>
+</tbody></table></div>

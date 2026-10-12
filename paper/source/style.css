@@ -1,0 +1,83 @@
+@page {
+  size: A4;
+  margin: 24mm 21mm 26mm 21mm;
+  @bottom-center { content: counter(page); font-family: "Times New Roman", "游明朝", serif; font-size: 9.5pt; color: #222; }
+}
+:root { --serif: "Times New Roman", "游明朝", "Yu Mincho", "Noto Serif JP", serif; --sans: "Arial", "游ゴシック Medium", "Noto Sans JP", sans-serif; }
+html { font-size: 10pt; }
+body {
+  font-family: var(--serif);
+  line-height: 1.78;
+  color: #111;
+  text-align: justify;
+  text-justify: inter-character;
+  line-break: strict;
+  word-break: normal;
+  overflow-wrap: break-word;
+  font-kerning: normal;
+  text-spacing-trim: trim-start;
+  text-autospace: normal;
+  margin: 0;
+}
+p { margin: 0; text-indent: 1em; widows: 2; orphans: 2; }
+p.noindent, .noindent { text-indent: 0; }
+h1.title { font-family: var(--sans); font-weight: 700; font-size: 17pt; line-height: 1.5; text-align: center; margin: 4mm 0 3mm; letter-spacing: 0.02em; }
+.byline { text-align: center; font-size: 10.5pt; margin: 0 0 2mm; }
+.abstract { margin: 6mm 8mm 5mm; font-size: 9.5pt; line-height: 1.7; }
+.abstract .label { font-family: var(--sans); font-weight: 700; margin-right: 0.8em; }
+.keywords { margin: 0 8mm 6mm; font-size: 9.5pt; }
+.keywords .label { font-family: var(--sans); font-weight: 700; margin-right: 0.8em; }
+h2 { font-family: var(--sans); font-size: 12.5pt; font-weight: 700; margin: 8mm 0 2.5mm; line-height: 1.5; break-after: avoid; text-align: left; }
+h3 { font-family: var(--sans); font-size: 10.5pt; font-weight: 700; margin: 5mm 0 1.5mm; line-height: 1.5; break-after: avoid; text-align: left; }
+h4 { font-family: var(--sans); font-size: 10pt; font-weight: 700; margin: 3mm 0 1mm; break-after: avoid; text-align: left; }
+.sec-num { margin-right: 0.7em; }
+hr.rule { border: none; border-top: 0.6pt solid #111; margin: 4mm 0; }
+figure { margin: 5mm 0 5mm; break-inside: avoid; text-align: center; }
+figure img, figure svg { max-width: 100%; height: auto; }
+figcaption, .tcap { font-size: 9pt; line-height: 1.6; text-align: justify; text-indent: 0; margin-top: 2mm; }
+figcaption .no, .tcap .no { font-family: var(--sans); font-weight: 700; margin-right: 0.7em; }
+.tcap { margin: 4mm 0 1.6mm; text-align: left; }
+table.t { border-collapse: collapse; width: 100%; font-size: 8.8pt; line-height: 1.45; margin: 0 auto; font-variant-numeric: tabular-nums; text-align: right; }
+table.t th, table.t td { padding: 1.3mm 2mm; vertical-align: middle; }
+table.t thead th { border-top: 1.1pt solid #111; border-bottom: 0.6pt solid #111; font-family: var(--sans); font-weight: 700; font-size: 7.9pt; text-align: center; white-space: nowrap; line-height: 1.35; padding: 1.3mm 1mm; }
+table.t thead th.grp { border-bottom: 0.4pt solid #111; padding-bottom: 0.6mm; }
+table.t thead th.grp:empty { border-bottom: 0; }
+table.t thead tr + tr th { border-top: 0; }
+table.t tbody td:first-child, table.t thead th:first-child { text-align: left; }
+table.t tbody tr:last-child td { border-bottom: 1.1pt solid #111; }
+table.t tr.sep td { border-top: 0.4pt solid #888; }
+table.t tr.sub td { background: #f1f1f1; }
+table.t td.best { font-weight: 700; }
+table.t td.l, table.t th.l { text-align: left; }
+table.t td.c, table.t th.c { text-align: center; }
+.tfoot { font-size: 8.4pt; line-height: 1.55; text-indent: 0; margin: 1.6mm 0 5mm; text-align: justify; }
+.table-block { break-inside: avoid; margin-bottom: 4mm; }
+.eq { display: flex; align-items: center; justify-content: space-between; margin: 3mm 0; break-inside: avoid; text-indent: 0; }
+.eq > .math { flex: 1; text-align: center; }
+.eq > .no { width: 14mm; text-align: right; font-size: 10pt; }
+math { font-family: "Cambria Math", "Times New Roman", serif; font-size: 105%; }
+math[display="block"] { margin: 0; }
+sup, sub { line-height: 0; }
+code, .mono { font-family: "Consolas", "BIZ UDゴシック", monospace; font-size: 0.92em; }
+ol.refs { list-style: none; padding: 0; margin: 0; font-size: 8.8pt; line-height: 1.55; text-align: left; }
+ol.refs li { padding-left: 2.6em; text-indent: -2.6em; margin: 0 0 1.4mm; }
+ol.refs li .n { display: inline-block; width: 2.6em; text-indent: 0; }
+ul.items { margin: 1mm 0 1mm 1.5em; padding: 0; }
+ul.items li { margin: 0.6mm 0; text-indent: 0; }
+ol.items { margin: 1mm 0 1mm 1.8em; padding: 0; }
+ol.items li { margin: 0.6mm 0; text-indent: 0; }
+.alg { border-top: 1.1pt solid #111; border-bottom: 1.1pt solid #111; margin: 4mm 0; padding: 1.5mm 0; font-size: 9pt; line-height: 1.6; break-inside: avoid; text-align: left; }
+.alg .head { font-family: var(--sans); font-weight: 700; border-bottom: 0.5pt solid #111; padding-bottom: 1mm; margin-bottom: 1mm; }
+.alg ol { margin: 0; padding-left: 2em; }
+.alg li { margin: 0; text-indent: 0; }
+.note { font-size: 9pt; }
+.pagebreak { break-before: page; }
+.avoid { break-inside: avoid; }
+a { color: inherit; text-decoration: none; }
+.cite { white-space: nowrap; }
+.en { font-family: "Times New Roman", serif; }
+.table-block.long { break-inside: auto; }
+.table-block.long tr { break-inside: avoid; }
+table.t.params td, table.t.params th { text-align: left; }
+ul.ack { margin: 0.5mm 0 1.5mm 6mm; padding-left: 4mm; font-size: 9.2pt; line-height: 1.6; }
+ul.ack li { margin: 0.6mm 0; word-break: break-all; }

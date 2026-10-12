@@ -1,0 +1,78 @@
+<h2 id="s:method">提案手法</h2>
+
+<p>手法の全体を<ref k="f:overview"></ref>に示す。入力画像を縮小して作業画像を作り、単連結法で階層木を作る。楕円に由来する事前分布と画素ごとの手がかりを足した値を画素の得点とし、木の上で境界項を引いた得点の和が最大になる切断を、動的計画法で求める。得られた低解像度のマスクは、評価の解像度のアルファマットに仕上げる。</p>
+
+<figure id="f:overview"><img src="figs/fig_overview.png" alt="手法の概要"><figcaption><span class="no">図</span>手法の概要。(a)は入力画像と楕円、(b)は単連結階層木を高さで切った区画（区画の平均色で表示）、(c)は事前分布と手がかりの和（赤が前景側）、(d)は木の上の最適切断、(e)は縁の仕上げ後のα、(f)はαを使った背景のぼかし描画である。</figcaption></figure>
+
+<h3 id="s:work">作業画像</h3>
+<p>入力画像を幅 \(L\) 画素に縮小した画像を \(I_L\) とする（本稿では \(L=256\)、面積平均）。\(I_L\) の各色チャンネルを、2パーセンタイルと98パーセンタイルの間が0から1になるように線形に伸ばし、範囲の幅の下限を0.04、結果の上限を1.5として切り詰めたものを、作業画像 \(w:\Omega_L\to\mathbb R^3\) とする。画素数を \(N=|\Omega_L|\) で表す。</p>
+
+<h3 id="s:tree">単連結階層木</h3>
+<p>作業画像の4近傍の画素対を辺とし、辺 \(e=(p,q)\) の重みを色の距離 \(g_e=\lVert w(p)-w(q)\rVert_2\) とする。辺を重みの小さい順に並べ、素集合データ構造（union-find）で併合すると、葉が画素である二分木 \(T\) が得られる。内部節点 \(v\) は二つの子 \(l(v),r(v)\) を持ち、併合を起こした辺の重みを高さ \(h(v)\) として持つ。節点 \(v\) は画素の集合 \(\mathcal R(v)\) を表し、その面積を \(A(v)=|\mathcal R(v)|\) とする。単連結法の性質から、高さ \(t\) で木を切って得られる領域は、重みが \(t\) 以下の辺だけで連結した成分に一致する<cite k="gower1969"></cite>。構築の計算量は、辺の整列で決まり \(O(N\log N)\) である。</p>
+
+<h3 id="s:cut">木の上の最適切断</h3>
+<p>木の切断 \(\mathcal C\) を、互いに祖先と子孫の関係にない節点の集合と定める。切断が表す前景は \(F(\mathcal C)=\bigcup_{v\in\mathcal C}\mathcal R(v)\) である。画素 \(p\) の得点を \(u(p)\)、節点 \(v\) の境界項を \(\pi(v)\ge 0\) とし、節点の得点を</p>
+<div class="eq" id="e:score"><span class="math">\[ s(v)=\sum_{p\in\mathcal R(v)}u(p)-\pi(v) \]</span></div>
+<p>で定める。目的は、\(J(\mathcal C)=\sum_{v\in\mathcal C}s(v)\) を最大にする切断 \(\mathcal C\) を求めることである。\(u(p)\) が正の画素は前景に、負の画素は背景に寄与する。\(\pi(v)\) は、領域 \(\mathcal R(v)\) の境界が弱い（領域がまわりと似ている）ほど大きく、弱い境界に沿った切断を抑える。</p>
+<p>この最大化は、木の葉から根に向かう再帰で厳密に解ける。葉 \(v\) では \(B(v)=\max\{0,\,s(v)\}\) とし、内部節点では</p>
+<div class="eq" id="e:dp"><span class="math">\[ B(v)=\max\Bigl\{\,s(v),\;B\bigl(l(v)\bigr)+B\bigl(r(v)\bigr)\Bigr\} \]</span></div>
+<p>とする。\(B(v)\) は、\(v\) の部分木に含まれる切断のうち、得点の和の最大値である。\(v\) の部分木の切断は、\(v\) 自身を選ぶか、二つの子の部分木の切断を合わせたものであり、二つの子の部分木は互いに独立なので、再帰は最適性を保つ。根の値 \(B(\mathrm{root})\) が \(J\) の最大値である。各節点でどちらの選択が最大を与えたかを記録しておけば、根から辿って切断が復元できる。\(s(v)\) が与えられれば、計算量は \(O(N)\) である。<ref k="f:dp"></ref>に小さな例を示す。</p>
+
+<figure id="f:dp"><img src="figs/fig_dp.svg" alt="動的計画法の例" style="width:78%"><figcaption><span class="no">図</span>木の上の最適切断の例。葉の「u」は画素の得点、内部節点の「s」は式(<ref k="e:score" bare="1"></ref>)の節点の得点、「B」は式(<ref k="e:dp" bare="1"></ref>)で求めた最大値である。青い節点が選ばれた切断で、下の帯は前景（青）と背景（灰）を示す。得点が負の画素cを含む節点n2は、部分木の二つの選択の和より得点が小さいため選ばれない。</figcaption></figure>
+
+<h3 id="s:prior">楕円に由来する事前分布</h3>
+<p>楕円の内側ほど前景である可能性が高いとして、事前の得点を定める。倍率 \(a\in\{0.85,\,1,\,1.15\}\) の三つの楕円 \(E_a=(\mathbf c,a\mathbf r)\) について、</p>
+<div class="eq" id="e:prior"><span class="math">\[ \bar u_a(p)=\operatorname{clip}\!\left(\frac{1-\rho(p)/a}{\kappa},\,-1,\,1\right),\qquad \tilde u_a(p)=\begin{cases}\gamma\,\bar u_a(p)&\bar u_a(p)>0\\ \bar u_a(p)&\text{otherwise}\end{cases} \]</span></div>
+<p>を作り、その平均 \(u_E(p)=\tfrac13\sum_a\tilde u_a(p)\) を事前の得点とする。\(\kappa=0.35\) は境界の幅、\(\gamma=0.35\) は内側の得点の縮小率である。誤差モデルMでは楕円の内側にも背景が多く含まれるため、内側の正の得点だけを弱め、外側の負の得点は弱めない。三つの倍率の平均は、利用者の楕円の大きさが不確かであることに対応する。\(\gamma\) の影響は<ref k="s:abl_prior"></ref>で調べる。</p>
+
+<h3 id="s:boundary">境界項</h3>
+<p>辺 \(e\) の弱さを \(\omega_e=\tfrac12\sum_{\sigma\in\{0.05,\,0.1\}}\exp\!\bigl(-g_e^{2}/2\sigma^{2}\bigr)\) とする。重みの小さい（色の近い）辺ほど \(\omega_e\) は1に近い。節点 \(v\) の領域の境界辺の集合を \(\partial v=\{(p,q):\,p\in\mathcal R(v),\,q\notin\mathcal R(v)\}\) とし、境界辺の弱さの平均</p>
+<div class="eq" id="e:avgweak"><span class="math">\[ \bar\omega(v)=\frac{1}{|\partial v|}\sum_{e\in\partial v}\omega_e \]</span></div>
+<p>を使って、境界項を</p>
+<div class="eq" id="e:pen"><span class="math">\[ \pi(v)=m\,\lambda_0\,\frac{L}{128}\cdot 4\sqrt{A(v)}\;\bar\omega(v) \]</span></div>
+<p>と定める。\(4\sqrt{A(v)}\) は、面積 \(A(v)\) の正方形の周の長さである。境界辺の本数ではなくこの値を使うことで、輪郭が入り組んだ領域（髪の毛など）が過大に罰せられるのを避ける。\(m\) は境界項の強さを調整する倍率で、設計用の画像で \(m=0.5\) と選ぶ（<ref k="s:abl_pen"></ref>）。積 \(m\lambda_0\) だけが結果に効くため、\(\lambda_0=14/3\) は \(m\) に吸収される定数である。係数 \(L/128\) は、解像度が上がると得点の和が面積に比例して \(L^2\) で増える一方、周の長さが \(L\) でしか増えないため、両者の比を保つ補正である。</p>
+<p>すべての節点について \(\sum_{e\in\partial v}\omega_e\) を求めるには、辺の両端点の最近共通祖先（LCA）を使う。各節点 \(x\) に値 \(\mathrm{own}(x)\) を持たせ、辺ごとに、二つの端点に \(\omega_e\) を加え、両端点の最近共通祖先から \(2\omega_e\) を引く。ある節点 \(v\) の部分木の \(\mathrm{own}\) の総和を取ると、辺 \(e\) の寄与は次のとおりになる。両端点が \(\mathcal R(v)\) の外にあれば0である。一方の端点だけが内にあれば、最近共通祖先は \(v\) の祖先なので \(\omega_e\) である。両端点が内にあれば、最近共通祖先が \(v\) の部分木に入るため \(2\omega_e-2\omega_e=0\) になる。したがって、総和は境界辺の弱さの和になる。</p>
+<div class="eq" id="e:lca"><span class="math">\[ \sum_{e\in\partial v}\omega_e=\sum_{x\in\mathrm{sub}(v)}\mathrm{own}(x),\qquad \mathrm{own}(x)=\sum_{e\ni x}\omega_e-2\!\!\sum_{e:\,\mathrm{LCA}(e)=x}\!\!\omega_e \]</span></div>
+<p>\(\omega_e\) を1に置き換えれば \(|\partial v|\) も同様に求まる。辺の数は \(O(N)\) であり、LCAを二分法（binary lifting）で求めると、全体で \(O(N\log N)\) である。</p>
+<p>比較のため、併合高さだけを使う形（併合高さ型）と、境界辺の弱さの総和をそのまま使う形（総和型）も定義する。併合高さ型は \(\pi_{\mathrm{wl}}(v)=m\,\lambda_0\,\tfrac{L}{128}\,4\sqrt{A(v)}\,\overline{\exp\bigl(-h(\mathrm{parent}(v))^{2}/2\sigma^{2}\bigr)}\)（上線は \(\sigma\) についての平均）である。単連結法では、\(v\) の領域から外へ出る辺のうち重みが最小のものが、親の節点を作る併合の辺になる。そのため、この形は境界辺のうち最も弱い（色の差が最小の）一本だけを見ている。総和型は \(\pi_{\Sigma}(v)=m\,\lambda_0\sum_{e\in\partial v}\omega_e\) である。</p>
+
+<h3 id="s:cues">画素ごとの手がかり</h3>
+<p>楕円の内側の中心側 \(\mathcal K=\{\rho<0.5\}\) と、外側 \(\mathcal B=\{\rho>1.3\}\) の画素を、それぞれ前景と背景の標本とみなす。手がかり \(c\) ごとに、この二つの標本から特徴量 \(x_c(p)\) の分布 \(\hat P_{\mathcal K}^{c}\)、\(\hat P_{\mathcal B}^{c}\) を推定し、対数尤度比を \([-1,1]\) に正規化して得点にする。</p>
+<div class="eq" id="e:llr"><span class="math">\[ e_c(p)=\frac12\operatorname{clip}\!\left(\ln\frac{\hat P_{\mathcal K}^{c}\bigl(x_c(p)\bigr)}{\hat P_{\mathcal B}^{c}\bigl(x_c(p)\bigr)},\,-2,\,2\right)\in[-1,1] \]</span></div>
+<p>中心側の標本が前景だけとは限らず、外側の標本も背景だけとは限らない。したがって \(e_c\) は、この二つの標本に対する識別性能にすぎない。</p>
+<p><b>色。</b>作業画像のRGBを各チャンネル8段階に量子化し、512段階のヒストグラムを両標本から作る。ヒストグラムは3×3×3の近傍で和を取って滑らかにし、正規化してから \(10^{-5}\) を足して比を取る。</p>
+<p><b>パッチ。</b>各画素について、3×3近傍のRGB値を並べた27次元のベクトル \(P(p)\) を作る。中心側から最大3000画素、外側から最大で中心側の標本数の8倍（下限20）の画素を無作為に選び、それぞれ標本集合 \(S_{\mathcal K}\)、\(S_{\mathcal B}\) とする。画素 \(p\) から各標本集合への最近傍距離</p>
+<div class="eq" id="e:nn"><span class="math">\[ d_{S}(p)=\min_{q\in S,\;\lVert p-q\rVert_\infty>2}\lVert P(p)-P(q)\rVert_2 \]</span></div>
+<p>を求める。画素自身とその近傍を除くことで、標本の画素が自分自身を最近傍にするのを避ける。得点は \(e_{\mathrm{pat}}(p)=\tfrac12\operatorname{clip}\bigl(4\ln\frac{d_{\mathcal B}(p)+10^{-3}}{d_{\mathcal K}(p)+10^{-3}},-2,2\bigr)\) である。画像から標本集合への距離を使った識別は、量子化を介さない最近傍による画像分類（NBNN）でも使われている<cite k="boiman2008"></cite>。最近傍法の漸近的な誤り率はベイズ誤り率の2倍以下である<cite k="cover1967"></cite>。</p>
+<p><b>テクスチャ。</b>原寸の8ビット画像 \(J\) について、各画素 \(p\) とその3×3近傍の画素 \(q\) の色の差の最大値</p>
+<div class="eq" id="e:flat"><span class="math">\[ m(p)=\max_{q\in\mathcal N_{3\times3}(p)}\;\max_{c}\bigl|J_c(p)-J_c(q)\bigr|\in\{0,\dots,255\} \]</span></div>
+<p>を求める。\(m(p)\le 2\) のとき1となる指示関数 \(f(p)=\mathbf 1[m(p)\le2]\) と、\(\min(m(p),32)/32\) の二つの特徴を作り、作業画像の格子に面積平均で縮小して、さらに3×3の平均で滑らかにしたものを \(F(p)\)、\(M(p)\) とする。\((F,M)\) を各6段階に量子化した36段階の同時ヒストグラムを両標本から作り、式(<ref k="e:llr" bare="1"></ref>)で対数尤度比を求める（頻度に0.5を足す）。</p>
+<p>この手がかりが、色転写の影響を受けにくい理由は次のとおりである。色転写は、画素の色だけから出力の色を決める変換 \(\varphi\)（\(J'(p)=\varphi(J(p))\)）として表される。このとき \(J(p)=J(q)\) ならば \(J'(p)=J'(q)\) であり、したがって \(m(p)=0\) の画素は、変換の後も \(m'(p)=0\) になる。色の差が完全に0の領域は、どのような画素ごとの色変換を受けても保たれる。一定色で塗られた領域をもつ前景と、絵画的な濃淡やノイズをもつ背景の組では、この平坦さが前景と背景を分ける。合成された領域の間でノイズの性質が異なることを手がかりにする点は、画像の改ざん検出で用いられるノイズの不整合の解析<cite k="mahdian2009"></cite>と共通する。縮小した画像では平坦な領域が平均されて失われるため、この手がかりは原寸の画像から計算する。<ref k="f:cues"></ref>に例を示す。</p>
+
+<figure id="f:cues"><img src="figs/fig_cues.png" alt="テクスチャの手がかり" style="width:100%"><figcaption><span class="no">図</span>テクスチャの手がかりの可視化（立ち絵1、転写100%）。左から、原寸画像の髪と背景の境界付近、平坦領域（白が \(m(p)\le2\) の画素）、3×3近傍内の最大絶対差（32で打ち切り）、テクスチャの得点 \(e_{\mathrm{tex}}\)（赤が前景側、黒い楕円は指定した楕円の一例）、正解のαである。</figcaption></figure>
+
+<h3 id="s:fuse">手がかりの併用と信頼度に基づく重み</h3>
+<p>画素の得点は、事前の得点と手がかりの重み付き和とする。</p>
+<div class="eq" id="e:unary"><span class="math">\[ u(p)=u_E(p)+\omega_{\mathrm{tex}}\,e_{\mathrm{tex}}(p)+\omega_{\mathrm{col}}\,e_{\mathrm{col}}(p)+\omega_{\mathrm{pat}}\,e_{\mathrm{pat}}(p) \]</span></div>
+<p>重みの固定配合は \((\omega_{\mathrm{tex}},\omega_{\mathrm{col}},\omega_{\mathrm{pat}})=(1.0,\,0.25,\,0.3)\) とする。5章に示すとおり、色とパッチを含む配合と、テクスチャだけの配合のどちらが優れるかは、画像の集合で異なる。色転写で色の手がかりが崩れる場合があるためである。そこで、手がかりの信頼度を正解を使わずに画像ごとに推定し、色の重みを調整する。</p>
+<p>手がかり \(c\) の特徴ベクトル（色は3次元、テクスチャは2次元の \((F,M)\)）に対して、\(\mathcal K\) と \(\mathcal B\) の標本にそれぞれ正規分布 \(\mathcal N(\mu_{\mathcal K},\Sigma_{\mathcal K})\)、\(\mathcal N(\mu_{\mathcal B},\Sigma_{\mathcal B})\) を当てはめ、バタチャリヤ係数<cite k="bhattacharyya1943"></cite>を閉じた形で求める。</p>
+<div class="eq" id="e:bc"><span class="math">\[ \mathrm{BC}_c=\exp(-D_B),\quad D_B=\frac18(\mu_{\mathcal K}-\mu_{\mathcal B})^{\!\top}\Sigma^{-1}(\mu_{\mathcal K}-\mu_{\mathcal B})+\frac12\ln\frac{\det\Sigma}{\sqrt{\det\Sigma_{\mathcal K}\det\Sigma_{\mathcal B}}},\quad \Sigma=\frac{\Sigma_{\mathcal K}+\Sigma_{\mathcal B}}{2} \]</span></div>
+<p>\(\mathrm{BC}_c\) は0から1の値で、小さいほど二つの標本の分布が離れている。事前確率を \(\pi_1,\pi_2\) とすると、二つのクラスの分類のベイズ誤り率は \(\sqrt{\pi_1\pi_2}\,\mathrm{BC}\) 以下である<cite k="fukunaga1990"></cite>。係数は手がかりの種類の間で直接比べられない。そこで、色転写の影響を受けにくいテクスチャの係数を基準にして、色の重みを</p>
+<div class="eq" id="e:wcol"><span class="math">\[ \omega_{\mathrm{col}}=0.5\,\max\!\left(0,\;1-\frac{\mathrm{BC}_{\mathrm{col}}}{\mathrm{BC}_{\mathrm{tex}}}\right) \]</span></div>
+<p>と定める。色の分布の離れがテクスチャの分布の離れより大きいほど重みは大きく、同程度以下なら0になる。テクスチャの重みは1.0、パッチの重みは0.3に固定する。パッチの係数は、<ref k="s:reliab"></ref>に示すとおり識別性能との対応が弱いため、重みの調整に使わない。パッチの重みも同じ式で調整した場合は、<ref k="s:main"></ref>で別に報告する。</p>
+
+<h3 id="s:finish">縁の仕上げ</h3>
+<p>切断から得た幅 \(L\) の二値マスク \(m_L\) は、評価の解像度のアルファマットに引き上げて、縁をなめらかにする。まず、画素 \(p\) の色 \(I(p)\) と、\(p\) に近い低解像度の4画素 \(q\) の色 \(I_L(q)\) の距離を使って</p>
+<div class="eq" id="e:jbu"><span class="math">\[ \alpha_0(p)=\frac{\sum_{q}\phi(p,q)\exp\!\bigl(-\lVert I(p)-I_L(q)\rVert^{2}/2\sigma_r^{2}\bigr)\,m_L(q)}{\sum_{q}\phi(p,q)\exp\!\bigl(-\lVert I(p)-I_L(q)\rVert^{2}/2\sigma_r^{2}\bigr)} \]</span></div>
+<p>を計算する（ジョイントバイラテラルアップサンプリング<cite k="kopf2007"></cite>）。\(\phi\) は双一次補間の重み、\(\sigma_r=0.12\) である。次に、\(0.02<\alpha_0<0.98\) の画素とその2画素外側の帯の中だけで、\(\alpha_0\) のロジットに色の対数尤度比を加えて補正する。補正後の値は \(\alpha_1=\mathrm{sigmoid}\bigl(6(\alpha_0-\tfrac12)+3\tilde\ell\bigr)\) で、\(\tilde\ell\in[-1,1]\) は、マスクの内側と外側の画素の色から作った、チャンネルごと32段階のヒストグラムによる対数尤度比（絶対値6で打ち切り、6で割ったもの）である。帯の外では \(\alpha_0\) をそのまま使う。最後に、画像 \(I\) を誘導画像とする色つきのガイデッドフィルタ<cite k="he2013"></cite>（半径2、\(\epsilon=10^{-3}\)）をかけて \(\hat\alpha\) とする。</p>
+
+<h3 id="s:cost">計算量</h3>
+<p>階層木の構築と境界項の計算は \(O(N\log N)\)、動的計画法は \(O(N)\) である。計算量が最も大きいのはパッチの最近傍探索で、標本の数を \(n_{\mathcal K},n_{\mathcal B}\) として \(O(N(n_{\mathcal K}+n_{\mathcal B}))\) である。3000画素と最大24000画素の標本を使う設定では、\(L=256\)（\(N\) は約3.7万）で、全画素への距離は約10<sup>9</sup>回の27次元の距離計算になる。色とテクスチャの手がかりはヒストグラムの数え上げだけで、\(O(N)\) である。計算は、楕円が変わっても作り直す必要のない部分と、楕円の変更のたびに計算する部分に分かれる。階層木と境界項は画像だけで決まるため、前者にあたる。楕円を動かす操作では、\(\mathcal K\)、\(\mathcal B\)、事前の得点と手がかりが変わるので、これらを求め直し、そのあとに動的計画法を \(O(N)\) で再計算する。</p>
+
+<div class="alg"><div class="head">アルゴリズム1　楕円からの前景抽出</div><ol>
+<li>入力画像から作業画像を作り（<ref k="s:work"></ref>）、4近傍の辺で単連結階層木を構築する（<ref k="s:tree"></ref>）。</li>
+<li>すべての節点について \(A(v)\) と式(<ref k="e:avgweak" bare="1"></ref>)の \(\bar\omega(v)\) をLCAを使って求め、境界項 \(\pi(v)\) を得る（<ref k="s:boundary"></ref>）。</li>
+<li>楕円から \(\mathcal K\)、\(\mathcal B\) と事前の得点 \(u_E\) を作る。三つの手がかりの得点 \(e_c\) を求め、バタチャリヤ係数から色の重みを定めて、\(u\) を得る（<ref k="s:prior"></ref>、<ref k="s:cues"></ref>、<ref k="s:fuse"></ref>）。</li>
+<li>葉から根へ \(s(v)\) と \(B(v)\) を求め、根から切断を復元して低解像度のマスクを得る（<ref k="s:cut"></ref>）。</li>
+<li>マスクを縁の仕上げで \(\hat\alpha\) に変換し（<ref k="s:finish"></ref>）、ぼかし描画に使う（<ref k="s:render"></ref>）。</li>
+</ol></div>

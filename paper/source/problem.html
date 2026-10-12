@@ -1,0 +1,19 @@
+<h2 id="s:problem">問題設定と評価</h2>
+
+<h3 id="s:io">入力と出力</h3>
+<p>画像 \(I:\Omega\to[0,1]^3\) を入力とする。\(\Omega\) は \(W\times H\) 画素の格子である。利用者の指定は楕円 \(E=(\mathbf c,\mathbf r)\) で与えられる。\(\mathbf c=(c_x,c_y)\) は中心、\(\mathbf r=(r_x,r_y)\) は二つの半径である。画素 \(p=(x,y)\) に対して、楕円に正規化した動径</p>
+<div class="eq" id="e:rho"><span class="math">\[ \rho(p)=\sqrt{\left(\frac{x-c_x}{r_x}\right)^{2}+\left(\frac{y-c_y}{r_y}\right)^{2}} \]</span></div>
+<p>を定める。\(\rho<1\) が楕円の内側である。出力は前景のアルファマット \(\hat\alpha:\Omega\to[0,1]\) である。</p>
+
+<h3 id="s:render">描画と評価指標</h3>
+<p>推定したアルファマットは、背景のぼかし描画に使う。前景の画素は \(I\) のまま残し、背景の画素だけを半径 \(R\) の円板でぼかす。ぼかしに前景の色が混ざらないよう、正規化畳み込み<cite k="knutsson1993"></cite>を使う。円板の核を \(G_R\)、畳み込みを \(*\) で表すと、描画は</p>
+<div class="eq" id="e:render"><span class="math">\[ \mathcal R(I,\alpha)=\alpha\,I+(1-\alpha)\,\frac{G_R*\bigl((1-\alpha)I\bigr)}{\max\bigl(G_R*(1-\alpha),\,\varepsilon\bigr)} \]</span></div>
+<p>である。右辺の第2項は、背景の画素だけを重みとして平均した色になる。ここで \(\varepsilon=10^{-4}\) とする。ぼかしによる光学的な効果は円板の点拡がり関数で近似しており、深度に応じた変化や、明るい光源の広がりは扱わない。</p>
+<p>評価には二つの指標を使う。一つは前景のIoU（intersection over union）で、\(\hat\alpha\) と正解 \(\alpha^\ast\) をそれぞれ0.5で二値化した集合の、共通部分と和集合の面積比である<cite k="everingham2010"></cite>。もう一つは、推定したアルファマットによる描画 \(\mathcal R(I,\hat\alpha)\) と、正解による描画 \(\mathcal R(I,\alpha^\ast)\) の平均絶対誤差（MAE）である。</p>
+<div class="eq" id="e:mae"><span class="math">\[ \mathrm{MAE}=\frac{255}{3|\Omega|}\sum_{p\in\Omega}\sum_{c=1}^{3}\Bigl|\mathcal R(I,\hat\alpha)_c(p)-\mathcal R(I,\alpha^\ast)_c(p)\Bigr| \]</span></div>
+<p>評価は幅640画素の画像で行い、\(R=12\) 画素とする。MAEは0から255の値であり、IoUが前景の形の一致を測るのに対し、MAEは描画の見た目への影響を測る。</p>
+
+<h3 id="s:noise">楕円の誤差モデル</h3>
+<p>利用者が指定する楕円の誤差は、正解のアルファマット \(\alpha^\ast\) から次のように模擬する。まず、\(\alpha^\ast>0.5\) の外接矩形に内接する楕円 \(E^\ast=(\mathbf c^\ast,\mathbf r^\ast)\) を作る。次に、各軸の倍率 \(s_x,s_y\) と中心のずれ \(h_x,h_y\) を独立に一様乱数で引き、</p>
+<div class="eq" id="e:noise"><span class="math">\[ \mathbf c=\mathbf c^\ast+2\,(h_x r^\ast_x,\;h_y r^\ast_y),\qquad \mathbf r=(s_x r^\ast_x,\;s_y r^\ast_y) \]</span></div>
+<p>とする。\(h\) は直径に対する割合である。主な誤差モデルMは、\(s\in[0.8,1.6]\)、\(h\in[-0.12,0.12]\) とする。ほかに、倍率を対数一様に引く対称な誤差モデルS（\(s\in[0.74,1.35]\)、\(|h|\le0.12\)）、小さい誤差モデルT（\(s\in[0.9,1.15]\)、\(|h|\le0.05\)）、大きい誤差モデルL（\(s\in[0.7,2.0]\)、\(|h|\le0.20\)）を用いる。誤差モデルMで、楕円の内側の面積のうち前景が占める割合は、立ち絵1と立ち絵2で平均<<V:occ_ymm>>、17体で平均<<V:occ_f>>である。外側にはみ出す前景の面積の割合は、立ち絵で平均<<V:spill_ymm>>、17体で平均<<V:spill_f>>である。</p>
