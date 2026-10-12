@@ -13,6 +13,8 @@ class Timing:
     graph_cut_ms: float
     pixel_count: str
     environment: str
+    instances: int
+    problems: int
 
     @property
     def ratio(self) -> float:
@@ -23,7 +25,14 @@ class Timing:
         if not path.exists():
             return None
         data = json.loads(path.read_text(encoding="utf-8"))
-        return Timing(data["tree_ms"], data["graph_cut_ms"], data["pixel_count"], data["environment"])
+        return Timing(
+            data["tree_ms"],
+            data["graph_cut_ms"],
+            data["pixel_count"],
+            data["environment"],
+            data["instances"],
+            data["problems"],
+        )
 
 
 class Study:

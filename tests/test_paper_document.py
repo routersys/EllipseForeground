@@ -15,7 +15,7 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 def page(tmp_path_factory):
     directory = tmp_path_factory.mktemp("results")
     write_results(directory)
-    study = Study(Results(directory), Timing(0.5, 40.0, "3.3万〜3.7万", "試験用の環境"))
+    study = Study(Results(directory), Timing(0.5, 40.0, "3.3万〜3.7万", "試験用の環境", 5, 40))
     html, order = render(study, DATA)
     return html, order
 

@@ -126,9 +126,11 @@ def measure(data_root: Path, output: Path) -> dict:
     tree_agreement: list[float] = []
     graph_agreement: list[float] = []
     counts = []
+    problems = 0
     for key, index in TIMED_SCENES:
         instance = scene_instance(data_root, key, index)
         counts.append(instance.pixel_count)
+        problems += len(instance.tree_labels)
         samples, agreement = run_solver(tree_library, instance.tree_input, instance.tree_labels, TREE_REPETITIONS)
         tree_samples += samples
         tree_agreement.append(agreement)
@@ -142,6 +144,8 @@ def measure(data_root: Path, output: Path) -> dict:
         "graph_cut_ms": statistics.median(graph_samples),
         "pixel_count": pixel_range(counts),
         "environment": f"{processor_name()}、.NET {runtime_version()}",
+        "instances": len(TIMED_SCENES),
+        "problems": problems,
         "tree_agreement": min(tree_agreement),
         "graph_cut_agreement": min(graph_agreement),
         "tree_samples": tree_samples,

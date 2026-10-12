@@ -275,8 +275,10 @@ def graph_cut_section(study: Study) -> str:
     if study.timing:
         timing = study.timing
         paragraphs.append(
-            f"<p>最適化1回の計算時間を、同じ得点のもとで測った。幅256の画像（\\(N\\) は{timing.pixel_count}）で、木の動的計画法（C#、単一スレッド、得点の合計から切断の復元まで）は1回あたり中央値{timing.tree_ms:.1f}ミリ秒、"
-            f"同じ画素グラフに対する素朴な Dinic 法による最小カット（C#）は{timing.graph_cut_ms:.0f}ミリ秒で、約{timing.ratio:.0f}倍である。測定は{timing.environment}で行った。"
+            f"<p>最適化1回の計算時間を、同じ得点のもとで測った。幅256の画像（\\(N\\) は{timing.pixel_count}）の{timing.instances}場面について、計{timing.problems}個の得点を解いた。"
+            f"木の動的計画法（C#、単一スレッド、得点の合計から切断の復元まで）は1回あたり中央値{timing.tree_ms:.2f}ミリ秒、"
+            f"同じ画素グラフに対する素朴な Dinic 法による最小カット（C#）は{timing.graph_cut_ms:.1f}ミリ秒で、約{timing.ratio:.0f}倍である。"
+            f"どちらも、木とグラフの構築と、1回目の実行を除いた、2回目の実行の時間を問題数で割った値である。測定は{timing.environment}で行った。"
             "木の構築と境界項の計算は画像ごとに1回で済み、楕円を動かす操作では、得点の再計算のあとに動的計画法だけを繰り返す。"
             '画像のグラフでは、BoykovとKolmogorovのアルゴリズム<cite k="boykov2004"></cite>のように、最小カットをより速く求める実装もあり、この比は実装によって変わる。</p>'
         )

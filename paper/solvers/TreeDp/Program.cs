@@ -16,18 +16,24 @@ var total = new double[nodeCount];
 var best = new double[nodeCount];
 var selected = new bool[nodeCount];
 var pending = new int[nodeCount];
+SolveAll();
 var watch = Stopwatch.StartNew();
-for (var problem = 0; problem < problemCount; problem++)
-{
-    Solve(unaries[problem]);
-    for (var leaf = 0; leaf < leafCount; leaf++)
-    {
-        labels[problem * leafCount + leaf] = (byte)(selected[leaf] ? 1 : 0);
-    }
-}
+SolveAll();
 watch.Stop();
 File.WriteAllBytes(args[1], labels);
 Console.WriteLine($"solved {problemCount} problems n={leafCount} in {watch.Elapsed.TotalMilliseconds:F2} ms");
+
+void SolveAll()
+{
+    for (var problem = 0; problem < problemCount; problem++)
+    {
+        Solve(unaries[problem]);
+        for (var leaf = 0; leaf < leafCount; leaf++)
+        {
+            labels[problem * leafCount + leaf] = (byte)(selected[leaf] ? 1 : 0);
+        }
+    }
+}
 
 int[] ReadInts(int count)
 {

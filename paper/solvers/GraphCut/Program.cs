@@ -24,15 +24,21 @@ for (var problem = 0; problem < problemCount; problem++)
 }
 
 var labels = new byte[problemCount * pixelCount];
-var watch = Stopwatch.StartNew();
 var solver = new Dinic(width, height, horizontal, vertical);
-for (var problem = 0; problem < problemCount; problem++)
-{
-    solver.Solve(unaries[problem], labels, problem * pixelCount);
-}
+SolveAll();
+var watch = Stopwatch.StartNew();
+SolveAll();
 watch.Stop();
 File.WriteAllBytes(args[1], labels);
 Console.WriteLine($"solved {problemCount} problems {width}x{height} in {watch.Elapsed.TotalMilliseconds:F2} ms");
+
+void SolveAll()
+{
+    for (var problem = 0; problem < problemCount; problem++)
+    {
+        solver.Solve(unaries[problem], labels, problem * pixelCount);
+    }
+}
 
 sealed class Dinic
 {
