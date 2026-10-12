@@ -1,0 +1,35 @@
+name: テスト
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.13']
+
+    steps:
+      - name: ソースコードのチェックアウト
+        uses: actions/checkout@v7
+
+      - name: Python のセットアップ
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 依存関係のインストール
+        run: pip install -e ".[dev,figures]"
+
+      - name: 静的検査
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: テスト
+        run: pytest

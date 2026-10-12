@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 
 import numpy as np
 import pytest
@@ -9,6 +10,13 @@ from paper.timing import build_instance, build_solver, pixel_range, run_solver
 from tests.helpers import noisy_scene
 
 PROBLEMS = 3
+
+
+def dotnet_supports_the_solvers() -> bool:
+    if shutil.which("dotnet") is None:
+        return False
+    sdks = subprocess.run(["dotnet", "--list-sdks"], capture_output=True, text=True).stdout
+    return any(line.startswith("10.") for line in sdks.splitlines())
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +57,7 @@ def test_pixel_range_collapses_equal_values():
     assert pixel_range([32768, 32768]) == "3.3万"
 
 
-@pytest.mark.skipif(shutil.which("dotnet") is None, reason=".NETのSDKがありません")
+@pytest.mark.skipif(not dotnet_supports_the_solvers(), reason=".NET 10のSDKがありません")
 def test_compiled_solvers_agree_with_the_reference_implementation(instance_inputs):
     _, instance = instance_inputs
     _, tree_agreement = run_solver(build_solver("TreeDp"), instance.tree_input, instance.tree_labels, 1)
