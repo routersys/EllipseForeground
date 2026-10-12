@@ -10,12 +10,15 @@ from ellipse_foreground.evaluation.experiments.resolution import WORK_WIDTHS, re
 from ellipse_foreground.evaluation.own import own_scenes
 from ellipse_foreground.evaluation.results import append_records, finished_scenes
 from ellipse_foreground.evaluation.scene import Scene
-from ellipse_foreground.evaluation.sprites import public_scenes
+from ellipse_foreground.evaluation.sprites import collection_scenes, public_scenes
 from ellipse_foreground.evaluation.trials import ERROR_MODELS
 from ellipse_foreground.settings import DEFAULT_SETTINGS, Settings
 
 EXPERIMENTS = ("trials", "models", "resolution")
 SECONDARY_MODELS = ("S", "T", "L")
+COLLECTION_SEED = 78
+COLLECTION_TRIALS = 2
+COLLECTION_RESOLUTION_STRIDE = 3
 
 
 @dataclass(frozen=True)
@@ -34,6 +37,22 @@ def own_group(name: str) -> GroupSpec:
 def public_group(strength: float) -> GroupSpec:
     name = f"public{round(strength * 100)}"
     return GroupSpec(name, lambda data, selection: public_scenes(data, strength, selection=selection), 2, None)
+
+
+def collection_group(
+    strength: float,
+    sprites: Sequence[Path],
+    backgrounds: Sequence[Path],
+    seed: int = COLLECTION_SEED,
+    grounded: bool = False,
+) -> GroupSpec:
+    name = f"collection{round(strength * 100)}"
+    identified = [(f"sprite{index:02d}", path) for index, path in enumerate(sprites)]
+
+    def scenes(data: Path, selection: range | None) -> Iterator[Scene]:
+        return collection_scenes(identified, backgrounds, name, strength, seed, grounded, selection)
+
+    return GroupSpec(name, scenes, COLLECTION_TRIALS, COLLECTION_RESOLUTION_STRIDE)
 
 
 GROUPS = {
