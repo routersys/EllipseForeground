@@ -1,5 +1,6 @@
 from paper.numbers import above_zero, below_zero, ceil3, f2, f3, interval_text, signed
 from paper.quantities import (
+    degenerate_trials,
     mean_auc,
     mean_color_weight,
     mean_overlap,
@@ -96,6 +97,19 @@ def main_results(study: Study) -> str:
 <p>固定配合のテクスチャのみに対するIoUの差は、立ち絵1で{d("sprite1", "mix", "tex")}、設計に使っていない立ち絵2で{d("sprite2", "mix", "tex")}、17体の転写0%で{d("collection0", "mix", "tex")}、転写100%で{d("collection100", "mix", "tex")}である。信頼区間が0を含まない集合では、いずれも固定配合が上回る。固定配合は、四つの集合のどれでも、最良の構成との差が{ceil3(regret)}以内に収まる。</p>
 <p><b>重みの適応の効果。</b>適応（色）の固定配合に対するIoUの差は、立ち絵1で{d("sprite1", "adaptive_c", "mix")}、立ち絵2で{d("sprite2", "adaptive_c", "mix")}、17体の転写0%で{d("collection0", "adaptive_c", "mix")}、転写100%で{d("collection100", "adaptive_c", "mix")}である。大きさは最大でも{f3(adaptive_size)}にとどまり、符号は集合で異なる。パッチの重みも調整した適応（色とパッチ）は、17体で{d("collection0", "adaptive", "mix")}と{d("collection100", "adaptive", "mix")}と、信頼区間が0を含まない向上を示す。立ち絵1では{d("sprite1", "adaptive", "mix")}で、信頼区間が0を含む。立ち絵2では{d("sprite2", "adaptive", "mix")}である。MAEでも、適応（色とパッチ）は17体で小さくなり（転写0%で{d("collection0", "adaptive", "mix", "mae", 2)}）、ほかの集合では差が小さい。</p>
 <p><b>上限との差。</b>正解の事前分布を得点にしたときのIoUは、立ち絵1で{f3(m("sprite1", "oracle"))}、立ち絵2で{f3(m("sprite2", "oracle"))}、17体の転写0%と100%で{f3(m("collection0", "oracle"))}と{f3(m("collection100", "oracle"))}である。これは、階層木と縁の仕上げが表現できる形の限界を示す。適応（色）との差は、それぞれ{f3(m("sprite1", "oracle") - m("sprite1", "adaptive_c"))}、{f3(m("sprite2", "oracle") - m("sprite2", "adaptive_c"))}、{f3(m("collection0", "oracle") - m("collection0", "adaptive_c"))}、{f3(m("collection100", "oracle") - m("collection100", "adaptive_c"))}であり、手がかりの精度に改善の余地が残る。{headroom_sentence(study)}</p>"""
+
+
+def blind_paragraph(study: Study) -> str:
+    found = degenerate_trials(study.results, "collection100")
+    if found is None:
+        return ""
+    share = 100.0 * found.trials / found.total_trials
+    return (
+        f"\n<p><b>手がかりが働かない場面。</b>17体の転写100%には、背景がほぼ一様な壁紙で、強さ100%の色転写により前景が背景と同じ色の一様な塗りになる場面が{found.scenes}場面（{found.trials}試行、全{found.total_trials}試行の{share:.0f}%）ある。"
+        'この場面では、三つの手がかりの楕円内のAUCがすべて0.5で、バタチャリヤ係数が1になり（<ref k="f:scatter"></ref>の右下の点）、'
+        f"手がかりを使う構成のIoUの平均は{f3(found.cue_iou)}である。"
+        f"これらの場面を除くと、17体の転写100%の固定配合のIoUは{f3(found.with_mix)}から{f3(found.without_mix)}になる。</p>"
+    )
 
 
 def significance_sentence(study: Study, first: str, second: str, keys: tuple[str, ...]) -> str:
@@ -238,6 +252,7 @@ def main_section(study: Study) -> str:
     return (
         '<h3 id="s:main">主な結果</h3>\n'
         + main_results(study)
+        + blind_paragraph(study)
         + '\n<figure id="f:bars"><img src="figs/fig_bars.svg" alt="集合ごとのIoU" style="width:100%"><figcaption><span class="no">図</span>集合ごとの前景のIoU（誤差モデルM、縁の仕上げ後）。棒は場面を単位とする平均、縦線は95%信頼区間（ブートストラップ法）、点線は正解の事前分布を得点にした上限である。</figcaption></figure>\n'
         + iou_table
         + "\n"

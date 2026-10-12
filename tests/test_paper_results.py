@@ -2,7 +2,13 @@ import pytest
 
 from ellipse_foreground.evaluation.results import append_records
 from paper.numbers import interval_text
-from paper.quantities import graph_cut_comparison, headline, ordering_disagreement, rank_correlations
+from paper.quantities import (
+    degenerate_trials,
+    graph_cut_comparison,
+    headline,
+    ordering_disagreement,
+    rank_correlations,
+)
 from paper.results import SUBSETS, Measure, Results
 
 
@@ -112,3 +118,17 @@ def test_every_subset_names_a_group_and_a_scene_range():
 def test_interval_text_shows_mean_and_bounds(results):
     text = interval_text(Measure(results).interval("sprite1", "tex", "ellipse"))
     assert text == "+0.200［+0.200，+0.200］"
+
+
+def test_scenes_where_no_cue_works_are_detected_and_excluded(tmp_path):
+    records = [trial_record(scene, 0, 0.8, 0.9, 0.1, 0.9) for scene in range(3)]
+    blind = trial_record(3, 0, 0.0, 0.0, 1.0, 0.5)
+    blind["occupancy"] = 0.5
+    append_records(tmp_path / "comparison" / "collection100.jsonl", [*records, blind])
+    found = degenerate_trials(Results(tmp_path), "collection100")
+    assert found is not None
+    assert (found.scenes, found.trials, found.total_trials) == (1, 1, 4)
+    assert found.cue_iou == pytest.approx(0.0)
+    assert found.without_mix == pytest.approx(0.8)
+    assert found.with_mix == pytest.approx(0.6)
+    assert degenerate_trials(Results(tmp_path / "missing"), "collection100") is None
