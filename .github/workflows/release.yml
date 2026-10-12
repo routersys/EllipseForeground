@@ -95,7 +95,14 @@ jobs:
             Copy-Item $file.FullName "$stageRoot/"
           }
 
+          $paper = "docs/ellipse-foreground-extraction.pdf"
+          if (-not (Test-Path $paper)) {
+            Write-Error "論文の PDF が見つかりませんでした: $paper"
+            exit 1
+          }
+
           Copy-Item "LICENSE.txt" "$stageRoot/"
+          Copy-Item $paper        "$stageRoot/"
 
           Compress-Archive -Path "stage/*" -DestinationPath $pkgName -CompressionLevel Optimal
           echo "PKG_NAME=$pkgName" >> $env:GITHUB_OUTPUT
