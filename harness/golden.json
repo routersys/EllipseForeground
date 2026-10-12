@@ -1,0 +1,146 @@
+{
+  "environment": "python 3.13.1; numpy 2.5.4; scipy 1.18.1; pillow 12.3.0; Windows AMD64",
+  "input": "paper-scenes 7 5B0C7E1F04966EFA",
+  "cases": [
+    {
+      "name": "work-image",
+      "hash": "F5FA42927799CD31DEC8BC37B1CA2586B38C84E6D6AC188580BADE56F36EDC66"
+    },
+    {
+      "name": "tree",
+      "hash": "176828E7A468611F732AD0021E4B2AC49888B5BECB1875F3D7BCBC616C47DB17"
+    },
+    {
+      "name": "penalty-mean-weakness",
+      "hash": "C43B929D58923D7E47772F0B267BDAD9347E4C55355EE2505D5F3757F8905045"
+    },
+    {
+      "name": "penalty-merge-height",
+      "hash": "C7035C2DD7B52FA6D0D4CAF56937509682F6C7F673CBD8ADE054A2F531793EBE"
+    },
+    {
+      "name": "penalty-weakness-sum",
+      "hash": "32EF37B9EE24557538447215A9244619DDC54E28F1CCDF0062ECCE9DF2EF5965"
+    },
+    {
+      "name": "cue-prior",
+      "hash": "2C3B66BBA4BB10F4B98178F3FC5A2A67E27F611195C095ED06165B305B42A847"
+    },
+    {
+      "name": "cue-color",
+      "hash": "4FD39792F765E0CFF86D807DC71FA008F4B01A5212503EDCA4DAD9CDC29D3975"
+    },
+    {
+      "name": "cue-texture",
+      "hash": "6E4CD54E570CFE89BEB547A429898E75E5179DE0B44CA7EF4533BA9DE691D7EC"
+    },
+    {
+      "name": "cue-patch",
+      "hash": "B77563837DD8B1A42212AB67CE8F69E2AF0AE73E4FEBA7199CB95C2C3A28148F"
+    },
+    {
+      "name": "overlaps",
+      "hash": "85BB5798A794816AF248926A443A76EF44F7B8FDC661624EA4BF3DABBF487E14"
+    },
+    {
+      "name": "trial-ellipses",
+      "hash": "D13C6E31FC3AA4828FCAD31052337A061A8F6BB2F49C0D03089BE94765FC1E64"
+    },
+    {
+      "name": "prior-only",
+      "hash": "382881E983B89B02BB689131AAD80A08A6A810BB3C89AB9EFD15CD3D74910335"
+    },
+    {
+      "name": "texture-only",
+      "hash": "F5E659D953293D6A524F0B1021FB4EFA7CD8CC895BA5EBDA7560C8014AF674EB"
+    },
+    {
+      "name": "appearance-only",
+      "hash": "C904065F94048DAC166BAED9CDF8007F839EB3041362850F12A344D8B45DCAD6"
+    },
+    {
+      "name": "fixed-mix",
+      "hash": "CCC398C1DF717042117B133DCBAA03D6FDCCA9A9BEC88470A1EBC6B8BB712FC0"
+    },
+    {
+      "name": "adaptive-color",
+      "hash": "88DD7A926734D934EDED727B1DBD6827432B9FD7990BF805F8A165C2B1F6126D"
+    },
+    {
+      "name": "adaptive-color-patch",
+      "hash": "E9FF1C943F188395E3533C22C8123ECCBCD1E2D91611EA57FEC352B1FC8871BE"
+    },
+    {
+      "name": "graph-cut",
+      "hash": "7485E7CFFD487EAF9B2190A8D22E1CA4800987B5C88D243DFA7EC4C14C7C1AC5"
+    },
+    {
+      "name": "score-adaptive-color",
+      "hash": "41503CE84CC5F395AAAF5CEFE3D6F0928E430204483201D96878E35208E30895"
+    },
+    {
+      "name": "sprite1-dose0-adaptive-color",
+      "hash": "4D1E33314BE707F85768006921C75B7BC267AD0B5DB8F4F314174D5ABB872B4B"
+    },
+    {
+      "name": "sprite2-adaptive-color-patch",
+      "hash": "B22584DA43147B1AF18939E0ADDB71F2097DA77D357726D60658494A6C509455"
+    },
+    {
+      "name": "public0-3-adaptive-color",
+      "hash": "72917B579940A1AD910EDD7D6411BF475870CF2EB9F530FBBD9A3E78711232EA"
+    },
+    {
+      "name": "public100-3-adaptive-color-patch",
+      "hash": "CF1D5484CA5FACCAD3E20A64F9E7F77FCB674592896EF5AEE33F5F365F8DBAC7"
+    },
+    {
+      "name": "public0-40-fixed-mix",
+      "hash": "6D86954AE23928A5CE06F9A6299E3BDD3C98764EC8C0683251990A36BE87D476"
+    },
+    {
+      "name": "public100-40-adaptive-color",
+      "hash": "7144C5B068868FF63866B3E177484AA15B0FFBB02F82879BE93C07080AD3B53A"
+    },
+    {
+      "name": "fast-adaptive-color",
+      "hash": "404025520A70CD8AE36ECAACE6A6F4622C621AA575912EEC6867310136F061FC"
+    },
+    {
+      "name": "form-merge-height",
+      "hash": "F1A40663334DB47706B5CCA6C4F552874808C5FC24C31CB6525FF6D7D2BF9B8C"
+    },
+    {
+      "name": "form-weakness-sum",
+      "hash": "EB9F284B6A8AF62D735E109F07C4963E1397BCC57642F50C321B5AF2E0570617"
+    },
+    {
+      "name": "strength-0.25",
+      "hash": "9F12A08EA01A6096817700C47D799515534E4E8816F13857F82024F605528449"
+    },
+    {
+      "name": "strength-2",
+      "hash": "DBEA84AD86797548733F31169066B052168A54AF730C8E0F06CCA91D177192DC"
+    },
+    {
+      "name": "inside-shrink-1",
+      "hash": "EB9BB18FC793373CD742FDC0733C9C335DD173C142B7257FE2C45B2E61AF5554"
+    },
+    {
+      "name": "patch-core-limit-200",
+      "hash": "A78E667552458D9D09C6F4B40414702004894C8A4555A12B6F4CFD76A679288B"
+    },
+    {
+      "name": "model-S",
+      "hash": "5CB0D043CA47F3E5426FF2D48B7EE5BE77E63906A15865CEF6E75AE82F639E17"
+    },
+    {
+      "name": "model-T",
+      "hash": "5D7FCBD0663AA5F9E642C600C7D1367CAD7D33E80B76DD3B793AEA48D031D751"
+    },
+    {
+      "name": "model-L",
+      "hash": "6104C088C8D6A69DD1AFDA56CE3D91384E47658464C293807E6C906483C0F80F"
+    }
+  ]
+}
