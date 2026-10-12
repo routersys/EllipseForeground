@@ -26,7 +26,7 @@ jobs:
       - name: 依存関係のインストール
         run: pip install -e ".[dev,figures]"
 
-      - name: 静的検査
+      - name: 静的解析
         run: |
           ruff check .
           ruff format --check .
