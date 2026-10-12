@@ -15,15 +15,23 @@ class TextureFeatures:
     magnitude: np.ndarray
 
 
+def _channel_maximum(values: np.ndarray) -> np.ndarray:
+    result = values[..., 0]
+    for channel in range(1, values.shape[2]):
+        result = np.maximum(result, values[..., channel])
+    return result
+
+
 def neighborhood_contrast(source: np.ndarray) -> np.ndarray:
     values = source.astype(np.int16)
-    padded = np.pad(values, ((1, 1), (1, 1), (0, 0)), mode="edge")
     height, width = values.shape[:2]
     contrast = np.zeros((height, width), dtype=np.int16)
-    for dy in (-1, 0, 1):
-        for dx in (-1, 0, 1):
-            neighbor = padded[1 + dy : 1 + dy + height, 1 + dx : 1 + dx + width]
-            contrast = np.maximum(contrast, np.abs(neighbor - values).max(axis=2))
+    for dy, dx in ((0, 1), (1, -1), (1, 0), (1, 1)):
+        rows, columns = slice(0, height - dy), slice(max(-dx, 0), width - max(dx, 0))
+        shifted_rows, shifted_columns = slice(dy, height), slice(max(dx, 0), width + min(dx, 0))
+        difference = _channel_maximum(np.abs(values[shifted_rows, shifted_columns] - values[rows, columns]))
+        contrast[rows, columns] = np.maximum(contrast[rows, columns], difference)
+        contrast[shifted_rows, shifted_columns] = np.maximum(contrast[shifted_rows, shifted_columns], difference)
     return contrast
 
 

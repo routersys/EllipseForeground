@@ -12,6 +12,18 @@ def test_neighborhood_contrast_is_zero_on_flat_regions_and_positive_next_to_edge
     assert contrast[2, 2] == contrast[2, 3] == 100
 
 
+def test_neighborhood_contrast_is_the_largest_channel_difference_to_the_eight_neighbors():
+    source = np.random.default_rng(5).integers(0, 256, (13, 17, 3), dtype=np.uint8)
+    values = source.astype(np.int16)
+    padded = np.pad(values, ((1, 1), (1, 1), (0, 0)), mode="edge")
+    expected = np.zeros(values.shape[:2], dtype=np.int16)
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            neighbor = padded[1 + dy : 1 + dy + 13, 1 + dx : 1 + dx + 17]
+            expected = np.maximum(expected, np.abs(neighbor - values).max(axis=2))
+    assert np.array_equal(neighborhood_contrast(source), expected)
+
+
 def test_texture_features_of_a_flat_image_are_fully_flat():
     features = texture_features(np.full((20, 40, 3), 77, dtype=np.uint8), (10, 20), TextureSettings())
     assert np.allclose(features.flatness, 1.0)
