@@ -8,6 +8,7 @@ authors:
   - name: routersys
 repository-code: https://github.com/routersys/EllipseForeground
 license: BSD-3-Clause
+doi: 10.5281/zenodo.23318600
 abstract: 楕円で大まかに指定した範囲から、画像の前景のアルファマットを求めるPythonのライブラリです。論文「楕円による大まかな指定からの前景抽出」の参照実装で、評価のコードと論文の原稿を収録しています。
 keywords:
   - 前景抽出
