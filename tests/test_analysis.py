@@ -80,3 +80,20 @@ def test_without_a_boundary_penalty_the_cut_selects_the_positive_pixels(scene, f
 def test_graph_cut_recovers_a_flat_body(scene, fixed_scores):
     analysis, body = scene
     assert foreground_iou(analysis.finish(analysis.graph_cut(fixed_scores)), body) > 0.9
+
+
+def test_individual_cue_methods_match_the_combined_cue_maps(scene):
+    analysis, _ = scene
+    regions = analysis.regions(ELLIPSE)
+    maps = analysis.cue_maps(ELLIPSE, regions)
+    assert np.array_equal(maps.prior, analysis.prior_map(ELLIPSE))
+    assert np.array_equal(maps.color, analysis.color_map(regions))
+    assert np.array_equal(maps.texture, analysis.texture_map(regions))
+    assert np.array_equal(maps.patch, analysis.patch_map(regions))
+
+
+def test_reusing_node_scores_gives_the_same_cut(scene, fixed_scores):
+    analysis, _ = scene
+    node_scores = analysis.node_scores(fixed_scores)
+    for form in BoundaryForm:
+        assert np.array_equal(analysis.cut_node_scores(node_scores, form, 3.0), analysis.cut(fixed_scores, form, 3.0))

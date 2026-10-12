@@ -67,14 +67,26 @@ class Analysis:
             ~work_ellipse.inside(self.shape, samples.ring_radius),
         )
 
+    def prior_map(self, ellipse: Ellipse) -> np.ndarray:
+        return ellipse_prior(self.shape, self.work_ellipse(ellipse), self.settings.prior)
+
+    def color_map(self, regions: Regions) -> np.ndarray:
+        return color_evidence(self.work, regions.core, regions.ring, self.settings.color)
+
+    def texture_map(self, regions: Regions) -> np.ndarray:
+        return texture_evidence(self.texture, regions.core, regions.ring, self.settings.texture)
+
+    def patch_map(self, regions: Regions) -> np.ndarray:
+        patch = self.settings.patch
+        core_samples, ring_samples = choose_patch_samples(regions.core, regions.ring, self.priorities, patch)
+        return patch_evidence(self.vectors, core_samples, ring_samples, self.shape, patch)
+
     def cue_maps(self, ellipse: Ellipse, regions: Regions) -> CueMaps:
-        settings = self.settings
-        core_samples, ring_samples = choose_patch_samples(regions.core, regions.ring, self.priorities, settings.patch)
         return CueMaps(
-            prior=ellipse_prior(self.shape, self.work_ellipse(ellipse), settings.prior),
-            color=color_evidence(self.work, regions.core, regions.ring, settings.color),
-            texture=texture_evidence(self.texture, regions.core, regions.ring, settings.texture),
-            patch=patch_evidence(self.vectors, core_samples, ring_samples, self.shape, settings.patch),
+            prior=self.prior_map(ellipse),
+            color=self.color_map(regions),
+            texture=self.texture_map(regions),
+            patch=self.patch_map(regions),
         )
 
     def overlaps(self, regions: Regions) -> Overlaps:
@@ -82,9 +94,17 @@ class Analysis:
             self.work, self.texture, self.vectors, regions.core, regions.ring, self.settings.weights.ridge
         )
 
+    def node_scores(self, scores: np.ndarray) -> np.ndarray:
+        return leaf_sums(self.tree, scores)
+
+    def cut_node_scores(
+        self, node_scores: np.ndarray, form: BoundaryForm | None = None, strength: float | None = None
+    ) -> np.ndarray:
+        penalized = node_scores - self.boundary.penalty(form, strength)
+        return optimal_cut(self.tree, penalized).reshape(self.shape)
+
     def cut(self, scores: np.ndarray, form: BoundaryForm | None = None, strength: float | None = None) -> np.ndarray:
-        node_scores = leaf_sums(self.tree, scores) - self.boundary.penalty(form, strength)
-        return optimal_cut(self.tree, node_scores).reshape(self.shape)
+        return self.cut_node_scores(self.node_scores(scores), form, strength)
 
     def graph_cut(self, scores: np.ndarray) -> np.ndarray:
         return graph_cut_labels(self.work, scores, self.settings.graph_cut)
