@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](#)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-orange.svg)](#)
 [![Release](https://img.shields.io/github/v/release/routersys/EllipseForeground.svg)](https://github.com/routersys/EllipseForeground/releases)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23318600.svg)](https://doi.org/10.5281/zenodo.23318600)
 
 ---
 
@@ -328,3 +329,5 @@ NumPy、SciPy、Pillow、Matplotlibは同梱していません。インストー
 ## 引用
 
 このリポジトリを引用するときは、[`CITATION.cff`](CITATION.cff)を使ってください。GitHubの「Cite this repository」からも取れます。
+
+リポジトリはZenodoに登録してあります。すべてのバージョンを表すDOIは[10.5281/zenodo.23318600](https://doi.org/10.5281/zenodo.23318600)で、v1.0.0のDOIは[10.5281/zenodo.23318601](https://doi.org/10.5281/zenodo.23318601)です。
