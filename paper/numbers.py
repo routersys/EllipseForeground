@@ -26,6 +26,18 @@ def signed(value: float, digits: int = 3) -> str:
     return ("+" if value > 0 else "-") + text
 
 
+def above_zero(interval: Interval, digits: int = 3) -> bool:
+    return round(interval.low, digits) > 0
+
+
+def below_zero(interval: Interval, digits: int = 3) -> bool:
+    return round(interval.high, digits) < 0
+
+
+def separates_from_zero(interval: Interval, digits: int = 3) -> bool:
+    return above_zero(interval, digits) or below_zero(interval, digits)
+
+
 def percent(value: float) -> str:
     return f"{100 * value:.0f}%"
 

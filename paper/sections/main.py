@@ -1,4 +1,4 @@
-from paper.numbers import ceil3, f2, f3, interval_text, signed
+from paper.numbers import above_zero, below_zero, ceil3, f2, f3, interval_text, signed
 from paper.quantities import (
     mean_auc,
     mean_color_weight,
@@ -99,7 +99,7 @@ def main_results(study: Study) -> str:
 
 
 def significance_sentence(study: Study, first: str, second: str, keys: tuple[str, ...]) -> str:
-    if all(study.interval(key, first, second).low > 0 for key in keys):
+    if all(above_zero(study.interval(key, first, second)) for key in keys):
         return "四つの集合のすべてで、信頼区間は0を含まない。"
     return ""
 
@@ -168,11 +168,11 @@ def public_results(study: Study) -> str:
         f"適応（色）の固定配合に対する差は、転写0%で{d(zero, 'adaptive_c', 'mix')}、100%で{d(full, 'adaptive_c', 'mix')}で、"
         f"適応（色とパッチ）では{d(zero, 'adaptive', 'mix')}と{d(full, 'adaptive', 'mix')}である。</p>\n"
     )
-    if all(study.interval(key, "mix", other).low > 0 for key in keys for other in ("tex", "app")):
+    if all(above_zero(study.interval(key, "mix", other)) for key in keys for other in ("tex", "app")):
         text += "<p>固定配合は、テクスチャのみと色とパッチのみのどちらに対しても、転写0%と100%の両方で、信頼区間が0を含まない差で上回る。</p>\n"
     graph = {key: study.interval(key, "adaptive_c", "adaptive_c", first_family="graph") for key in keys}
     graph_error = {key: study.interval(key, "adaptive_c", "adaptive_c", "mae", first_family="graph") for key in keys}
-    if all(graph[key].low > 0 and graph_error[key].high < 0 for key in keys):
+    if all(above_zero(graph[key]) and below_zero(graph_error[key], 2) for key in keys):
         verdict = "転写0%と100%のどちらでも、グラフカットのIoUが高く、MAEが小さい。"
     else:
         verdict = "符号は条件により異なる。"

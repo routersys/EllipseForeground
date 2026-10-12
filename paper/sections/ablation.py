@@ -41,6 +41,7 @@ STAGES = (
     ("final", "＋色の補正（帯）＋ガイデッドフィルタ（本稿）"),
 )
 SOURCE_NAMES = (("full", "原寸（幅1280）"), ("x640", "1/2に縮小（幅640）"), ("x320", "1/4に縮小（幅320）"))
+SETTLED_STEP = 0.005
 MODEL_ORDER = ("M", *MODEL_NAMES)
 
 
@@ -262,14 +263,21 @@ def graph_cut_section(study: Study) -> str:
         else "符号と信頼区間は表のとおりである"
     )
     smallest, largest = min(best_exponent.values()), max(best_exponent.values())
+    undecided = [key for key in SETS if key not in comparison.higher + comparison.lower]
+    unclear = f"{'、'.join(names[key] for key in undecided)}では、差の信頼区間が0を含む。" if undecided else ""
+    dependence = (
+        "色転写100%の集合どうしでも、17体では木の切断が、公開素材ではグラフカットが高く、この向きは画像の集合に依存する。"
+        if "collection100" in comparison.lower and "public100" in comparison.higher
+        else ""
+    )
     paragraphs = [
         "<p>同じ得点 \\(u\\)、同じ辺の重み \\(\\omega_e\\)、同じ縁の仕上げのもとで、画素単位のグラフカットと比べる。グラフカットは、"
         '前景の画素の集合を \\(F\\) として、\\(-\\sum_{p\\in F}u(p)+\\lambda\\sum_{(p,q):\\,p\\in F,\\,q\\notin F}\\omega_{pq}\\) を、画素の4近傍のグラフ上で最小カットにより最小にする<cite k="boykov2001"></cite>。'
         f'\\(\\lambda\\) は、設計用の画像の平均IoUが最大になる{plain(smoothness)}とした（<ref k="f:reg"></ref>下段）。</p>',
-        f'<p><ref k="t:tvg"></ref>に結果を示す。{higher_sentence}{lower_sentence}それ以外の集合では、差の信頼区間が0を含む。'
+        f'<p><ref k="t:tvg"></ref>に結果を示す。{higher_sentence}{lower_sentence}{unclear}'
         f"MAEの差は、六つの集合の順に{'、'.join(signed(error[key]) for key in SETS)}で、{error_note}。"
         "木の切断が選べるのは、単連結の併合で作った領域だけであり、輪郭が弱い場所で背景の領域と細くつながっていると、その部分だけを分けられないことがある。"
-        "色転写100%の集合どうしでも、17体では木の切断が、公開素材ではグラフカットが高く、この向きは画像の集合に依存する。"
+        f"{dependence}"
         f"グラフカットの \\(\\lambda\\) も、集合ごとの最良の値が{plain(2.0**smallest)}から{plain(2.0**largest)}まで変わる。</p>",
     ]
     if study.timing:
@@ -363,8 +371,15 @@ def resolution_section(study: Study) -> str:
     def step(first: int, second: int, key: str) -> str:
         return signed(iou(second, key) - iou(first, key))
 
+    largest_step = max(abs(iou(384, key) - iou(256, key)) for key in EARLIER_SETS)
+    settled = (
+        f"変化の絶対値は{ceil3(largest_step)}以下で、幅を256より大きくしても、IoUはほとんど変わらない。"
+        if largest_step <= SETTLED_STEP
+        else "幅を256より大きくしたときの変化は、集合により異なる。"
+    )
+
     text = f"""<p>テクスチャの手がかりを、原寸画像と、縮小した画像から計算したときの比較を<ref k="t:texres"></ref>に示す。入力を1/2（幅640）に縮小すると、テクスチャのみのIoUは、立ち絵1で{f3(drop_half["sprite1"])}、立ち絵2で{f3(drop_half["sprite2"])}、17体の転写0%と100%で{f3(drop_half["collection0"])}と{f3(drop_half["collection100"])}下がる。1/4（幅320）では、それぞれ{f3(drop_quarter["sprite1"])}、{f3(drop_quarter["sprite2"])}、{f3(drop_quarter["collection0"])}、{f3(drop_quarter["collection100"])}下がる。色とパッチを併用した場合も、1/2への縮小で{f3(drop_half_mix["sprite1"])}、{f3(drop_half_mix["sprite2"])}、{f3(drop_half_mix["collection0"])}、{f3(drop_half_mix["collection100"])}下がる。平坦な領域は縮小の平均で失われるため、テクスチャの手がかりは原寸の画素から計算する。</p>
-<p>作業画像の幅 \\(L\\)（<ref k="s:work"></ref>）を変えた結果を<ref k="t:res"></ref>に示す。\\(L=128\\) から256に上げると、テクスチャのみのIoUは、立ち絵1で{step(128, 256, "sprite1")}、17体の転写0%と100%で{step(128, 256, "collection0")}と{step(128, 256, "collection100")}変わり、立ち絵2では{step(128, 256, "sprite2")}変わる。256から384への変化は、立ち絵1で{step(256, 384, "sprite1")}、立ち絵2で{step(256, 384, "sprite2")}、17体で{step(256, 384, "collection0")}と{step(256, 384, "collection100")}であり、小さい。作業画像の幅の影響は、テクスチャの入力の解像度に比べて小さい。</p>"""
+<p>作業画像の幅 \\(L\\)（<ref k="s:work"></ref>）を変えた結果を<ref k="t:res"></ref>に示す。\\(L=128\\) から256に上げると、テクスチャのみのIoUは、立ち絵1で{step(128, 256, "sprite1")}、17体の転写0%と100%で{step(128, 256, "collection0")}と{step(128, 256, "collection100")}変わり、立ち絵2では{step(128, 256, "sprite2")}変わる。256から384への変化は、立ち絵1で{step(256, 384, "sprite1")}、立ち絵2で{step(256, 384, "sprite2")}、17体で{step(256, 384, "collection0")}と{step(256, 384, "collection100")}である。{settled}</p>"""
     return text + "\n" + texture_table + "\n" + width_table
 
 
@@ -492,22 +507,19 @@ def models_section(study: Study) -> str:
     )
     iou = values
     gain = {cell: iou[cell]["tex"][0] - iou[cell]["prior"][0] for cell in iou}
-    exceptions = [cell for cell in iou if not iou[cell]["prior"][0] > iou[cell]["ellipse"][0]]
-    texture_above = all(iou[cell]["tex"][0] > iou[cell]["prior"][0] for cell in iou)
-    if texture_above and not exceptions:
-        order = "同じである"
+    ordered = [cell for cell in iou if iou[cell]["tex"][0] > iou[cell]["prior"][0] > iou[cell]["ellipse"][0]]
+    exceptions = [cell for cell in iou if cell not in ordered]
+    scope = "立ち絵1、立ち絵2、17体の四つの集合と四つの誤差モデル"
+    sequence = "テクスチャのみ、事前分布のみ、楕円をそのまま使う場合の順にIoUが高い。"
+    if not exceptions:
+        order = f"{scope}のすべてで、{sequence}"
     else:
-        order = "同じではない。"
-        if texture_above:
-            order += "テクスチャのみが事前分布のみを上回る点はすべてで成り立つが、"
-        if exceptions:
-            listed = "、".join(
-                f"{SHORT_NAMES[key]}の誤差モデル{model}（{f3(iou[(key, model)]['prior'][0])}と{f3(iou[(key, model)]['ellipse'][0])}）"
-                for key, model in exceptions
-            )
-            order += f"事前分布のみが楕円をそのまま使う場合を上回る点は、{listed}を除いて成り立つ"
-        else:
-            order += "事前分布のみが楕円をそのまま使う場合を上回る点はすべてで成り立つ"
+        listed = "、".join(
+            f"{SHORT_NAMES[key]}の誤差モデル{model}（テクスチャのみ{f3(iou[(key, model)]['tex'][0])}、"
+            f"事前分布のみ{f3(iou[(key, model)]['prior'][0])}、楕円をそのまま使う場合{f3(iou[(key, model)]['ellipse'][0])}）"
+            for key, model in exceptions
+        )
+        order = f"{scope}の{len(iou)}通りのうち{len(ordered)}通りで、{sequence}例外は、{listed}である。"
     harder = {key: iou[(key, "L")]["tex"][0] - iou[(key, "T")]["tex"][0] for key in EARLIER_SETS}
-    text = f"""<p>楕円の誤差モデルを変えた結果を<ref k="t:models"></ref>に示す（<ref k="s:noise"></ref>）。テクスチャのみ、事前分布のみ、楕円をそのまま使う場合のIoUの順序は、立ち絵1、立ち絵2、17体の四つの集合と四つの誤差モデルのすべてで{order}。テクスチャの手がかりによる事前分布のみに対する向上は、{signed(min(gain.values()))}から{signed(max(gain.values()))}の範囲である。誤差が小さいモデルTから大きいモデルLに変えたときのテクスチャのみのIoUの変化は、立ち絵1で{signed(harder["sprite1"])}、立ち絵2で{signed(harder["sprite2"])}、17体の転写0%と100%で{signed(harder["collection0"])}と{signed(harder["collection100"])}である。</p>"""
+    text = f"""<p>楕円の誤差モデルを変えた結果を<ref k="t:models"></ref>に示す（<ref k="s:noise"></ref>）。{order}テクスチャの手がかりによる事前分布のみに対する向上は、{signed(min(gain.values()))}から{signed(max(gain.values()))}の範囲である。誤差が小さいモデルTから大きいモデルLに変えたときのテクスチャのみのIoUの変化は、立ち絵1で{signed(harder["sprite1"])}、立ち絵2で{signed(harder["sprite2"])}、17体の転写0%と100%で{signed(harder["collection0"])}と{signed(harder["collection100"])}である。</p>"""
     return text + "\n" + table

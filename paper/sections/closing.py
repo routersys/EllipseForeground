@@ -1,4 +1,4 @@
-from paper.numbers import ceil3, f2, f3, signed
+from paper.numbers import above_zero, below_zero, ceil3, f2, f3, signed
 from paper.quantities import (
     GraphCutComparison,
     graph_cut_comparison,
@@ -19,7 +19,8 @@ def join(keys: list[str]) -> str:
 
 
 def range_text(values: list[float]) -> str:
-    return f"{f3(min(values))}〜{f3(max(values))}"
+    low, high = f3(min(values)), f3(max(values))
+    return low if low == high else f"{low}〜{high}"
 
 
 def graph_cut_abstract(comparison: GraphCutComparison) -> str:
@@ -38,6 +39,8 @@ def graph_cut_abstract(comparison: GraphCutComparison) -> str:
     else:
         head = f"{join(positive)}で"
     tail = f"{join(negative)}では{range_text(negative_values)}低い"
+    if all(key in comparison.lower for key in negative):
+        tail += "（信頼区間は0を含まない）"
     return f"画素単位のグラフカットは、{head}木の切断よりIoUが{range_text(positive_values)}高く（信頼区間が0を含まないのは{significant_text}）、{tail}"
 
 
@@ -93,22 +96,17 @@ def graph_cut_discussion(study: Study, comparison: GraphCutComparison) -> str:
 
 
 def adaptive_patch_sentence(study: Study) -> str:
-    def clear(key: str) -> bool:
-        return study.interval(key, "adaptive", "mix").low > 0
-
-    def touching(key: str) -> bool:
-        interval = study.interval(key, "adaptive", "mix")
-        return interval.mean > 0 and not interval.excludes_zero
-
-    collections = ("collection0", "collection100")
-    public = ("public0", "public100")
+    intervals = {key: study.interval(key, "adaptive", "mix") for key in SETS}
+    better = [key for key in SETS if above_zero(intervals[key])]
+    worse = [key for key in SETS if below_zero(intervals[key])]
+    unclear = [key for key in SETS if key not in better + worse]
     parts = []
-    if all(clear(key) for key in collections):
-        parts.append("17体では向上し")
-    if all(touching(key) or clear(key) for key in public):
-        parts.append("公開素材でも差は正の向きだが信頼区間は0を含むか0に接する")
-    if study.difference("sprite1", "adaptive", "mix") < 0:
-        parts.append("立ち絵1では下がる")
+    if better:
+        parts.append(f"{join(better)}では信頼区間が0を含まない向上を示し")
+    if worse:
+        parts.append(f"{join(worse)}では信頼区間が0を含まない低下を示し")
+    if unclear:
+        parts.append(f"{join(unclear)}では差の信頼区間が0を含む")
     return "、".join(parts)
 
 

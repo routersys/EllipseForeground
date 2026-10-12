@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import spearmanr
 
 from ellipse_foreground.evaluation.statistics import scene_means
+from paper.numbers import above_zero, below_zero
 from paper.results import CUE_METHODS, EARLIER_SETS, SETS, Measure, Results
 
 CUE_KEYS = ("texture", "color", "patch")
@@ -123,7 +124,7 @@ def graph_cut_comparison(measure: Measure) -> GraphCutComparison:
     return GraphCutComparison(
         difference={key: interval(key, "iou").mean for key in SETS},
         error_difference={key: interval(key, "mae").mean for key in SETS},
-        higher=[key for key in SETS if interval(key, "iou").low > 0],
-        lower=[key for key in SETS if interval(key, "iou").high < 0],
-        smaller_error_everywhere=all(interval(key, "mae").high < 0 for key in SETS),
+        higher=[key for key in SETS if above_zero(interval(key, "iou"))],
+        lower=[key for key in SETS if below_zero(interval(key, "iou"))],
+        smaller_error_everywhere=all(below_zero(interval(key, "mae"), 2) for key in SETS),
     )

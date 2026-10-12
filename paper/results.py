@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ellipse_foreground.evaluation.results import read_records
 from ellipse_foreground.evaluation.statistics import Interval, bootstrap_interval, scene_means
+from paper.numbers import separates_from_zero
 
 TREE = "tree"
 GRAPH = "graph"
@@ -126,7 +127,7 @@ class Measure:
         return self.interval(key, first, second, measure, **families).mean
 
     def significant(self, key: str, first: str, second: str, measure: str = "iou", **families: str) -> bool:
-        return self.interval(key, first, second, measure, **families).excludes_zero
+        return separates_from_zero(self.interval(key, first, second, measure, **families))
 
     def ablation_mean(self, key: str, value: Callable[[dict], float]) -> float:
         return scene_mean(self.results.ablations(key), value)
