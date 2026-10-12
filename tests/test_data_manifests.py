@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 DATA = Path(__file__).resolve().parent.parent / "data"
-ALLOWED_LICENSES = {"CC0-1.0", "CC-BY-4.0"}
+ALLOWED_LICENSES = {"CC0-1.0", "CC-BY-4.0", "LicenseRef-Cyanea-Set8"}
 OWN_FILES = {"sprite1.npz", "sprite2.npz"}
 
 
@@ -24,6 +24,7 @@ def test_manifest_entries_state_their_origin_and_a_redistributable_license(folde
     manifest = json.loads((DATA / folder / "manifest.json").read_text(encoding="utf-8"))
     for entry in manifest:
         assert entry["license"] in ALLOWED_LICENSES
+        assert entry["license"].startswith("LicenseRef-") == ("terms" in entry)
         assert entry["author"]
         assert entry["title"]
         assert entry["source"].startswith("https://")

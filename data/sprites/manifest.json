@@ -149,7 +149,8 @@
     "sha256": "1d4954509e6cb62b18bdae9ab41ead455a274ede62958b97134a4014571b3b0f",
     "author": "4cher (Cyanea)",
     "title": "[FREE-TO-USE] Visual Novel Sprites",
-    "license": "CC-BY-4.0",
-    "source": "https://iam-cyanea.itch.io/set8-vnsprites"
+    "license": "LicenseRef-Cyanea-Set8",
+    "source": "https://iam-cyanea.itch.io/set8-vnsprites",
+    "terms": "ライセンスの表示はない。販売ページの説明文は、商用利用可、クレジット不要、自作と主張しない、販売しない、としている"
   }
 ]
