@@ -1,11 +1,19 @@
 import dataclasses
 
 import numpy as np
+import pytest
 
-from ellipse_foreground.cues.patch import choose_patch_samples, nearest_sample_distances, patch_evidence, patch_vectors
+from ellipse_foreground.cues.patch import (
+    choose_patch_samples,
+    exhaustive_distances,
+    nearest_sample_distances,
+    patch_evidence,
+    patch_vectors,
+    pruned_distances,
+)
 from ellipse_foreground.cues.sampling import pixel_priorities
 from ellipse_foreground.settings import PatchSettings
-from tests.helpers import random_work
+from tests.helpers import noisy_scene, random_work
 
 
 def test_patch_vectors_hold_the_window_in_row_major_order():
@@ -39,6 +47,39 @@ def test_nearest_sample_distances_match_brute_force_with_exclusion():
     settings = dataclasses.replace(PatchSettings(), block_rows=16)
     found = nearest_sample_distances(vectors, samples, shape, settings)
     assert np.allclose(found, brute_force_distances(vectors, samples, shape, settings.exclusion), atol=1e-6)
+
+
+def pruning_inputs(kind):
+    if kind == "noisy":
+        work = np.clip(noisy_scene(72, 128, seed=3)[0], 0.0, 1.0)
+    elif kind == "random":
+        work = random_work(72, 128, seed=8)
+    else:
+        work = np.full((72, 128, 3), 0.4, dtype=np.float32)
+    vectors = patch_vectors(work, 1)
+    samples = np.sort(np.random.default_rng(6).choice(len(vectors), 1800, replace=False))
+    return vectors, samples, work.shape[:2]
+
+
+@pytest.mark.parametrize("kind", ["noisy", "random", "constant"])
+def test_pruned_distances_equal_exhaustive_distances(kind):
+    vectors, samples, shape = pruning_inputs(kind)
+    settings = dataclasses.replace(PatchSettings(), block_rows=256)
+    pruned = pruned_distances(vectors, samples, shape, settings)
+    exhaustive = exhaustive_distances(vectors, samples, shape, settings)
+    assert np.abs(pruned - exhaustive).max() < 1e-7
+
+
+def test_pruning_is_used_for_large_sample_sets_and_changes_nothing_else():
+    vectors, samples, shape = pruning_inputs("noisy")
+    settings = PatchSettings()
+    assert np.array_equal(
+        nearest_sample_distances(vectors, samples, shape, settings), pruned_distances(vectors, samples, shape, settings)
+    )
+    few = samples[:200]
+    assert np.array_equal(
+        nearest_sample_distances(vectors, few, shape, settings), exhaustive_distances(vectors, few, shape, settings)
+    )
 
 
 def test_duplicate_patches_have_distance_zero():
