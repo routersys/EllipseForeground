@@ -246,7 +246,7 @@ python -m paper timing
 
 書き出しから作り直すときは、`python -m ellipse_foreground.evaluation.export sprite1 <フォルダー>`を使います。フォルダーには、背景つきの通常の出力`composite.png`、前景だけの出力`foreground_only.png`、背景だけの出力`background_only.png`と、元の色の出力（立ち絵1は`original_colors_composite.png`、立ち絵2は`original_colors_foreground.png`）を置きます。
 
-`data/sprites`と`data/backgrounds`の画像は、配布元のファイルの内容を変えず、ファイル名だけを変えて収録しました。各フォルダーの`manifest.json`には、作者、題名、ライセンス、出典、ファイルのSHA-256を記録してあります。
+`data/sprites`の画像は、配布元のファイルの内容を変えず、ファイル名だけを変えて収録しました。`data/backgrounds`の画像は、配布元の画像を16対9に切り出し、1920×1080画素に拡大縮小して、JPEG（品質95）で保存したものです。Wikimedia Commonsの12枚は、Commonsが生成する幅1920画素の画像から作りました。各フォルダーの`manifest.json`には、作者、題名、ライセンス、出典、収録したファイルのSHA-256を記録してあります。
 
 論文の評価に使った17体の立ち絵は、第三者の著作物のため、リポジトリに含めていません。`results`にあるのは、その評価の数値だけです。
 
