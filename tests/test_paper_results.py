@@ -9,7 +9,7 @@ from paper.quantities import (
     ordering_disagreement,
     rank_correlations,
 )
-from paper.results import SUBSETS, Measure, Results
+from paper.results import SUBSETS, Measure, Results, sprite_means
 
 
 def score(iou: float, mae: float = 1.0) -> dict:
@@ -132,3 +132,17 @@ def test_scenes_where_no_cue_works_are_detected_and_excluded(tmp_path):
     assert found.without_mix == pytest.approx(0.8)
     assert found.with_mix == pytest.approx(0.6)
     assert degenerate_trials(Results(tmp_path / "missing"), "collection100") is None
+
+
+def test_sprite_means_average_scenes_within_a_sprite():
+    records = [{"scene": scene, "value": value} for scene, value in ((0, 0.5), (1, 0.7), (2, 0.9), (6, 0.9))]
+    assert sprite_means(records, lambda record: record["value"]) == pytest.approx([0.7, 0.9])
+
+
+def test_sprite_interval_resamples_sprites(tmp_path):
+    records = [trial_record(scene, 0, 0.5, 0.6, 0.1, 0.9) for scene in (0, 1, 2, 6, 7)]
+    append_records(tmp_path / "comparison" / "public0.jsonl", records)
+    interval = Measure(Results(tmp_path)).sprite_interval("public0", "tex", "tex", first_family="graph")
+    assert interval.mean == pytest.approx(0.1)
+    assert interval.low == pytest.approx(0.1)
+    assert interval.high == pytest.approx(0.1)

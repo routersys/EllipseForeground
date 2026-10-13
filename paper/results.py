@@ -2,7 +2,10 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
+
 from ellipse_foreground.evaluation.results import read_records
+from ellipse_foreground.evaluation.sprites import SCENES_PER_SPRITE
 from ellipse_foreground.evaluation.statistics import Interval, bootstrap_interval, scene_means
 from paper.numbers import separates_from_zero
 
@@ -97,6 +100,16 @@ def scene_mean(records: Sequence[dict], value: Callable[[dict], float]) -> float
     return float(scene_means(records, value).mean())
 
 
+def sprite_means(records: Sequence[dict], value: Callable[[dict], float]) -> np.ndarray:
+    by_scene: dict[int, list[float]] = {}
+    for record in records:
+        by_scene.setdefault(record["scene"], []).append(value(record))
+    by_sprite: dict[int, list[float]] = {}
+    for scene in sorted(by_scene):
+        by_sprite.setdefault(scene // SCENES_PER_SPRITE, []).append(float(np.mean(by_scene[scene])))
+    return np.array([np.mean(by_sprite[sprite]) for sprite in sorted(by_sprite)])
+
+
 class Measure:
     def __init__(self, results: Results) -> None:
         self.results = results
@@ -122,6 +135,21 @@ class Measure:
             )
             cache[cache_key] = bootstrap_interval(difference)
         return cache[cache_key]
+
+    def sprite_interval(
+        self,
+        key: str,
+        first: str,
+        second: str,
+        measure: str = "iou",
+        first_family: str = TREE,
+        second_family: str = TREE,
+    ) -> Interval:
+        records = self.results.trials(key)
+        difference = sprite_means(records, lambda record: record[first_family][first][measure]) - sprite_means(
+            records, lambda record: record[second_family][second][measure]
+        )
+        return bootstrap_interval(difference)
 
     def difference(self, key: str, first: str, second: str, measure: str = "iou", **families: str) -> float:
         return self.interval(key, first, second, measure, **families).mean
