@@ -97,7 +97,7 @@ def overview_figure(directory: Path, data_root: Path) -> None:
 def texture_cues(directory: Path, data_root: Path) -> None:
     top, bottom, left, right = CUE_CROP
     figure, axes = plt.subplots(len(CUE_SCENES), 5, figsize=(9.2, 3.5))
-    titles = ["原寸画像の部分", "平坦領域", "最大絶対差", "テクスチャの証拠", "正解のα"]
+    titles = ["元の解像度の画像の部分", "平坦領域", "最大絶対差", "テクスチャの証拠", "正解のα"]
     for row, (label, scene_index) in enumerate(CUE_SCENES):
         context, trial = scene_trial(data_root, "sprite1", scene_index, 0, 8)
         source = context.scene.texture_source

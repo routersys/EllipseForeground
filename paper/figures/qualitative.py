@@ -169,7 +169,7 @@ def comparison_figure(directory: Path, data_root: Path, results: Results) -> lis
 
 RENDER_PICKS = (("立ち絵1・星雲・転写100%", "dose100", None), ("公開素材・転写0%", "public0", None))
 RENDER_METHODS = ("ellipse", "prior", "tex", "adaptive_c")
-RENDER_TITLES = ["基準描画（正解α）", "楕円をそのまま", "事前分布のみ", "テクスチャのみ", "適応（色）"]
+RENDER_TITLES = ["正解描画（正解α）", "楕円をそのまま", "事前分布のみ", "テクスチャのみ", "適応（色）"]
 RENDER_ROWS_FRACTION = 0.45
 RENDER_MARGIN = 20
 RENDER_AMPLIFICATION = 6

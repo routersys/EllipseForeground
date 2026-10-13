@@ -11,7 +11,7 @@
 <p>である。右辺の第2項は、背景の画素だけを重みとして平均した色になる。ここで \(\varepsilon=10^{-4}\) とする。ぼかしによる光学的な効果は円板の点拡がり関数で近似しており、深度に応じた変化や、明るい光源の広がりは扱わない。</p>
 <p>評価には二つの指標を使う。一つは前景のIoU（intersection over union）で、\(\hat\alpha\) と正解 \(\alpha^\ast\) をそれぞれ0.5で二値化した集合の、共通部分と和集合の面積比である<cite k="everingham2010"></cite>。もう一つは、推定したアルファマットによる描画 \(\mathcal R(I,\hat\alpha)\) と、正解による描画 \(\mathcal R(I,\alpha^\ast)\) の平均絶対誤差（MAE）である。</p>
 <div class="eq" id="e:mae"><span class="math">\[ \mathrm{MAE}=\frac{255}{3|\Omega|}\sum_{p\in\Omega}\sum_{c=1}^{3}\Bigl|\mathcal R(I,\hat\alpha)_c(p)-\mathcal R(I,\alpha^\ast)_c(p)\Bigr| \]</span></div>
-<p>評価は幅640画素の画像で行い、\(R=12\) 画素とする。MAEは0から255の値であり、IoUが前景の形の一致を測るのに対し、MAEは描画の見た目への影響を測る。</p>
+<p>評価は幅640画素の画像で行い、\(R=12\) 画素とする。MAEは0から255の値であり、IoUが前景の形の一致を測るのに対し、MAEは描画への視覚的な影響を測る。</p>
 
 <h3 id="s:noise">楕円の誤差モデル</h3>
 <p>利用者が指定する楕円の誤差は、正解のアルファマット \(\alpha^\ast\) から次のように模擬する。まず、\(\alpha^\ast>0.5\) の外接矩形に内接する楕円 \(E^\ast=(\mathbf c^\ast,\mathbf r^\ast)\) を作る。次に、各軸の倍率 \(s_x,s_y\) と中心のずれ \(h_x,h_y\) を独立に一様乱数で引き、</p>

@@ -40,7 +40,7 @@ STAGES = (
     ("jbu_guided", "＋ガイデッドフィルタ（補正なし）"),
     ("final", "＋色の補正（帯）＋ガイデッドフィルタ（本稿）"),
 )
-SOURCE_NAMES = (("full", "原寸（幅1280）"), ("x640", "1/2に縮小（幅640）"), ("x320", "1/4に縮小（幅320）"))
+SOURCE_NAMES = (("full", "元の解像度（幅1280）"), ("x640", "1/2に縮小（幅640）"), ("x320", "1/4に縮小（幅320）"))
 SETTLED_STEP = 0.005
 MODEL_ORDER = ("M", *MODEL_NAMES)
 
@@ -181,7 +181,7 @@ def forms_section(study: Study) -> str:
     spread = max(per_best.values()) / min(per_best.values())
     low_spread = max(-lower[form] for form, _ in FORMS) - min(-lower[form] for form, _ in FORMS)
     text = f"""<p>境界項の三つの形（<ref k="s:boundary"></ref>）を、同じスコア（適応（色））のもとで比べる（<ref k="t:forms"></ref>、<ref k="f:reg"></ref>上段）。倍率は形ごとに、開発用の画像の平均IoUが最大になる値を選んだ。選んだ倍率での開発用の画像の平均IoUは、平均類似度型が{f3(design[mean_form])}、総和型が{f3(design[sum_form])}、併合高さ型が{f3(design[height_form])}で、差は{ceil3(max(design.values()) - min(design.values()))}以内である。境界項の強さを調整すれば、三つの形の精度は同程度になる。</p>
-<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均類似度型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均類似度型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も弱い一本の弱さを使う。この値は境界辺の弱さの平均以上なので、同じ倍率でも罰が強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均類似度型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解スコアを用いたときのIoUは、総和型が{f3(oracle[sum_form])}、平均類似度型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
+<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均類似度型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均類似度型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も弱い一本の弱さを使う。この値は境界辺の弱さの平均以上なので、同じ倍率でもペナルティが強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均類似度型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解スコアを用いたときのIoUは、総和型が{f3(oracle[sum_form])}、平均類似度型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
 <p>最適な倍率はデータセットによって異なる。平均類似度型では、立ち絵1が{plain(per_best["sprite1"])}、立ち絵2が{plain(per_best["sprite2"])}、17体の転写0%が{plain(per_best["collection0"])}、転写100%が{plain(per_best["collection100"])}で最大になり、最大で{spread:.0f}倍の差がある。倍率を{plain(strength[mean_form])}の一つに決めると、各データセットの最良に対するIoUの低下は、立ち絵1で{f3_zero(-gap["sprite1"])}、立ち絵2で{f3_zero(-gap["sprite2"])}、17体の転写0%で{f3_zero(-gap["collection0"])}、転写100%で{f3_zero(-gap["collection100"])}である。境界項をなくすと、IoUは{f3(curves.none["sprite1"])}、{f3(curves.none["sprite2"])}、{f3(curves.none["collection0"])}、{f3(curves.none["collection100"])}に下がり、いずれのデータセットでも境界項は有効である。</p>"""
     return text + "\n" + table
 
@@ -378,7 +378,7 @@ def resolution_section(study: Study) -> str:
         else "幅を256より大きくしたときの変化は、データセットにより異なる。"
     )
 
-    text = f"""<p>テクスチャの手がかりを、原寸画像と、縮小した画像から計算したときの比較を<ref k="t:texres"></ref>に示す。入力を1/2（幅640）に縮小すると、テクスチャのみのIoUは、立ち絵1で{f3(drop_half["sprite1"])}、立ち絵2で{f3(drop_half["sprite2"])}、17体の転写0%と100%で{f3(drop_half["collection0"])}と{f3(drop_half["collection100"])}下がる。1/4（幅320）では、それぞれ{f3(drop_quarter["sprite1"])}、{f3(drop_quarter["sprite2"])}、{f3(drop_quarter["collection0"])}、{f3(drop_quarter["collection100"])}下がる。色とパッチを併用した場合も、1/2への縮小で{f3(drop_half_mix["sprite1"])}、{f3(drop_half_mix["sprite2"])}、{f3(drop_half_mix["collection0"])}、{f3(drop_half_mix["collection100"])}下がる。平坦な領域は縮小の平均で失われるため、テクスチャの手がかりは原寸の画素から計算する。</p>
+    text = f"""<p>テクスチャの手がかりを、元の解像度の画像と、縮小した画像から計算したときの比較を<ref k="t:texres"></ref>に示す。入力を1/2（幅640）に縮小すると、テクスチャのみのIoUは、立ち絵1で{f3(drop_half["sprite1"])}、立ち絵2で{f3(drop_half["sprite2"])}、17体の転写0%と100%で{f3(drop_half["collection0"])}と{f3(drop_half["collection100"])}下がる。1/4（幅320）では、それぞれ{f3(drop_quarter["sprite1"])}、{f3(drop_quarter["sprite2"])}、{f3(drop_quarter["collection0"])}、{f3(drop_quarter["collection100"])}下がる。色とパッチを併用した場合も、1/2への縮小で{f3(drop_half_mix["sprite1"])}、{f3(drop_half_mix["sprite2"])}、{f3(drop_half_mix["collection0"])}、{f3(drop_half_mix["collection100"])}下がる。平坦な領域は縮小の平均で失われるため、テクスチャの手がかりは元の解像度の画素から計算する。</p>
 <p>縮小画像の幅 \\(L\\)（<ref k="s:work"></ref>）を変えた結果を<ref k="t:res"></ref>に示す。\\(L=128\\) から256に上げると、テクスチャのみのIoUは、立ち絵1で{step(128, 256, "sprite1")}、17体の転写0%と100%で{step(128, 256, "collection0")}と{step(128, 256, "collection100")}変わり、立ち絵2では{step(128, 256, "sprite2")}変わる。256から384への変化は、立ち絵1で{step(256, 384, "sprite1")}、立ち絵2で{step(256, 384, "sprite2")}、17体で{step(256, 384, "collection0")}と{step(256, 384, "collection100")}である。{settled}</p>"""
     return text + "\n" + texture_table + "\n" + width_table
 
