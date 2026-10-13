@@ -7,28 +7,32 @@ from PIL import Image
 from ellipse_foreground.evaluation.listing import listed_paths
 from ellipse_foreground.evaluation.runner import (
     COLLECTION_SEED,
+    DEFAULT_EXPERIMENTS,
     EXPERIMENTS,
     GROUPS,
     GroupSpec,
     collection_group,
+    photo_group,
     run_group,
 )
 
 REPOSITORY = Path(__file__).resolve().parents[3]
 OPEN_END = 10**6
 COLLECTIONS = {"collection0": 0.0, "collection100": 1.0}
+PHOTO = "photo"
 
 
 def parse(arguments: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="python -m ellipse_foreground.evaluation")
-    parser.add_argument("group", choices=sorted([*GROUPS, *COLLECTIONS]))
-    parser.add_argument("--experiments", default=",".join(EXPERIMENTS))
+    parser.add_argument("group", choices=sorted([*GROUPS, *COLLECTIONS, PHOTO]))
+    parser.add_argument("--experiments", default=",".join(DEFAULT_EXPERIMENTS))
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--end", type=int, default=OPEN_END)
     parser.add_argument("--data", type=Path, default=REPOSITORY / "data")
     parser.add_argument("--results", type=Path, default=REPOSITORY / "results")
     parser.add_argument("--sprites", type=Path)
     parser.add_argument("--backgrounds", type=Path)
+    parser.add_argument("--photos", type=Path)
     parser.add_argument("--seed", type=int, default=COLLECTION_SEED)
     parser.add_argument("--grounded", action="store_true")
     return parser.parse_args(arguments)
@@ -37,6 +41,8 @@ def parse(arguments: list[str]) -> argparse.Namespace:
 def select_group(options: argparse.Namespace) -> GroupSpec | None:
     if options.group in GROUPS:
         return GROUPS[options.group]
+    if options.group == PHOTO:
+        return None if options.photos is None else photo_group(options.photos)
     if options.sprites is None or options.backgrounds is None:
         return None
     Image.MAX_IMAGE_PIXELS = None
@@ -58,7 +64,7 @@ def main(arguments: list[str]) -> int:
         return 2
     spec = select_group(options)
     if spec is None:
-        print("手元の素材の集合には --sprites と --backgrounds が必要です。", file=sys.stderr)
+        print("collection には --sprites と --backgrounds、photo には --photos が必要です。", file=sys.stderr)
         return 2
     run_group(spec, options.data, options.results, experiments, range(options.start, options.end))
     return 0

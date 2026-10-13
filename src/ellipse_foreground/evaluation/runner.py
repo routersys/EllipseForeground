@@ -9,17 +9,20 @@ from ellipse_foreground.evaluation.experiments.context import SceneContext, Tria
 from ellipse_foreground.evaluation.experiments.models import model_records
 from ellipse_foreground.evaluation.experiments.resolution import WORK_WIDTHS, resolution_records
 from ellipse_foreground.evaluation.own import own_scenes
+from ellipse_foreground.evaluation.photos import photo_scenes
 from ellipse_foreground.evaluation.results import append_records, finished_scenes
 from ellipse_foreground.evaluation.scene import Scene
 from ellipse_foreground.evaluation.sprites import collection_scenes, public_scenes
 from ellipse_foreground.evaluation.trials import ERROR_MODELS
 from ellipse_foreground.settings import DEFAULT_SETTINGS, Settings
 
-EXPERIMENTS = ("trials", "models", "resolution")
+EXPERIMENTS = ("trials", "comparison", "models", "resolution")
+DEFAULT_EXPERIMENTS = ("trials", "models", "resolution")
 SECONDARY_MODELS = ("S", "T", "L")
 COLLECTION_SEED = 78
 COLLECTION_TRIALS = 2
 COLLECTION_RESOLUTION_STRIDE = 3
+PHOTO_TRIALS = 2
 
 
 @dataclass(frozen=True)
@@ -56,6 +59,10 @@ def collection_group(
     return GroupSpec(name, scenes, COLLECTION_TRIALS, COLLECTION_RESOLUTION_STRIDE)
 
 
+def photo_group(directory: Path) -> GroupSpec:
+    return GroupSpec("photo", lambda data, selection: photo_scenes(directory, selection=selection), PHOTO_TRIALS, None)
+
+
 GROUPS = {
     spec.name: spec for spec in (own_group("sprite1"), own_group("sprite2"), public_group(0.0), public_group(1.0))
 }
@@ -90,8 +97,9 @@ def run_scene_experiments(
             append_records(output_path(results, experiment, name, selection), produce())
             worked = True
 
-    if "trials" in experiments:
+    if "trials" in experiments or "comparison" in experiments:
         store("comparison", spec.name, lambda: [comparison_record(context(), trial) for trial in trials()])
+    if "trials" in experiments:
         store("ablation", spec.name, lambda: [ablation_record(context(), trial) for trial in trials()])
     if "models" in experiments:
         for model in SECONDARY_MODELS:
