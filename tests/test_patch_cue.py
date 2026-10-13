@@ -114,3 +114,16 @@ def test_ring_sample_limit_follows_the_core_sample_count():
     core_samples, ring_samples = choose_patch_samples(core, ring, pixel_priorities(3600, 0), PatchSettings())
     assert len(core_samples) == 100
     assert len(ring_samples) == 800
+
+
+@pytest.mark.parametrize("empty", ["core", "ring"])
+def test_an_empty_sample_set_gives_no_evidence(empty):
+    from ellipse_foreground.cues.patch import patch_evidence
+
+    vectors = np.random.default_rng(0).random((20, 27))
+    samples = np.arange(5)
+    none = np.array([], dtype=int)
+    core, ring = (none, samples) if empty == "core" else (samples, none)
+    evidence = patch_evidence(vectors, core, ring, (4, 5), PatchSettings())
+    assert evidence.shape == (4, 5)
+    assert not evidence.any()

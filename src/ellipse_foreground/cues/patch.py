@@ -169,6 +169,8 @@ def patch_evidence(
     shape: tuple[int, int],
     settings: PatchSettings,
 ) -> np.ndarray:
+    if len(core_samples) == 0 or len(ring_samples) == 0:
+        return np.zeros(shape)
     core_distance = nearest_sample_distances(vectors, core_samples, shape, settings)
     ring_distance = nearest_sample_distances(vectors, ring_samples, shape, settings)
     evidence = bounded_log_ratio(
