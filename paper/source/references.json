@@ -32,5 +32,15 @@
   "kopf2007": "J. Kopf, M. F. Cohen, D. Lischinski, and M. Uyttendaele, “Joint bilateral upsampling,” <i>ACM Trans. Graphics</i>, vol. 26, no. 3, Art. 96, 2007.",
   "he2013": "K. He, J. Sun, and X. Tang, “Guided image filtering,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 35, no. 6, pp. 1397–1409, 2013. doi:10.1109/TPAMI.2012.213",
   "boykov2004": "Y. Boykov and V. Kolmogorov, “An experimental comparison of min-cut/max-flow algorithms for energy minimization in vision,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 26, no. 9, pp. 1124–1137, 2004. doi:10.1109/TPAMI.2004.60",
-  "hanley1982": "J. A. Hanley and B. J. McNeil, “The meaning and use of the area under a receiver operating characteristic (ROC) curve,” <i>Radiology</i>, vol. 143, no. 1, pp. 29–36, 1982. doi:10.1148/radiology.143.1.7063747"
+  "li2004": "Y. Li, J. Sun, C.-K. Tang, and H.-Y. Shum, “Lazy snapping,” <i>ACM Trans. Graphics</i>, vol. 23, no. 3, pp. 303–308, 2004. doi:10.1145/1015706.1015719",
+  "kohli2007": "P. Kohli and P. H. S. Torr, “Dynamic graph cuts for efficient inference in Markov random fields,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 29, no. 12, pp. 2079–2088, 2007. doi:10.1109/TPAMI.2007.1128",
+  "yu2015": "H. Yu, Y. Zhou, H. Qian, et al., “LooseCut: Interactive image segmentation with loosely bounded boxes,” arXiv:1507.03060, 2015.",
+  "xu2017": "N. Xu, B. Price, S. Cohen, J. Yang, and T. Huang, “Deep GrabCut for object selection,” in <i>Proc. British Machine Vision Conf. (BMVC)</i>, 2017. arXiv:1707.00243",
+  "lempitsky2011": "V. Lempitsky, A. Vedaldi, and A. Zisserman, “A pylon model for semantic segmentation,” in <i>Advances in Neural Information Processing Systems (NIPS)</i>, vol. 24, 2011.",
+  "kiran2014": "B. Ravi Kiran and J. Serra, “Global–local optimizations by hierarchical cuts and climbing energies,” <i>Pattern Recognition</i>, vol. 47, no. 1, pp. 12–24, 2014. doi:10.1016/j.patcog.2013.05.012",
+  "soille2008": "P. Soille, “Constrained connectivity for hierarchical image partitioning and simplification,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 30, no. 7, pp. 1132–1145, 2008. doi:10.1109/TPAMI.2007.70817",
+  "najman2013": "L. Najman, J. Cousty, and B. Perret, “Playing with Kruskal: Algorithms for morphological trees in edge-weighted graphs,” in <i>Mathematical Morphology and Its Applications to Signal and Image Processing (ISMM 2013)</i>, Lecture Notes in Computer Science, pp. 135–146, 2013. doi:10.1007/978-3-642-38294-9_12",
+  "cousty2018": "J. Cousty, L. Najman, Y. Kenmochi, and S. Guimarães, “Hierarchical segmentations with graphs: Quasi-flat zones, minimum spanning trees, and saliency maps,” <i>J. Mathematical Imaging and Vision</i>, vol. 60, no. 4, pp. 479–502, 2018. doi:10.1007/s10851-017-0768-7",
+  "collins2005": "R. T. Collins, Y. Liu, and M. Leordeanu, “Online selection of discriminative tracking features,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 27, no. 10, pp. 1631–1643, 2005. doi:10.1109/TPAMI.2005.205",
+  "li2023": "J. Li, J. Jain, and H. Shi, “Matting Anything,” arXiv:2306.05399, 2023."
 }
