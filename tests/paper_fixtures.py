@@ -96,6 +96,8 @@ def resolution_record(group: str, scene: int, trial: int, width: int, rng: np.ra
 
 def write_results(directory: Path, seed: int = 0) -> None:
     rng = np.random.default_rng(seed)
+    photos = [comparison_record("photo", scene, trial, rng) for scene in range(DEFAULT_SCENES) for trial in range(2)]
+    append_records(directory / "comparison" / "photo.jsonl", photos)
     for key in SETS:
         group = SUBSETS[key].group
         scenes = SCENE_COUNT.get(group, DEFAULT_SCENES)

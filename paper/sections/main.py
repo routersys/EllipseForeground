@@ -17,29 +17,11 @@ from paper.results import (
     PUBLIC_SETS,
     SUBSETS,
 )
+from paper.sections.labels import METHOD_HEADERS, METHOD_LABELS
+from paper.sections.photos import photo_section
 from paper.study import Study
 from paper.table import table_html
 
-METHOD_HEADERS = {
-    "ellipse": "楕円を<br>そのまま",
-    "prior": "事前分布<br>のみ",
-    "tex": "テクスチャ<br>のみ",
-    "app": "色と<br>パッチのみ",
-    "mix": "固定<br>重み",
-    "adaptive_c": "適応<br>（色）",
-    "adaptive": "適応（色と<br>パッチ）",
-    "oracle": "正解<br>スコア",
-}
-METHOD_LABELS = {
-    "ellipse": "楕円をそのまま使用",
-    "prior": "事前分布のみ",
-    "tex": "テクスチャのみ",
-    "app": "色とパッチのみ",
-    "mix": "固定重み",
-    "adaptive_c": "適応（色）",
-    "adaptive": "適応（色とパッチ）",
-    "oracle": "正解スコア",
-}
 MAIN_ROWS = (*DOSES, "others", "sprite1", "sprite2", "collection0", "collection100", "public0", "public100")
 SUMMARY_ROW = MAIN_ROWS.index("sprite1")
 
@@ -261,6 +243,7 @@ def main_section(study: Study) -> str:
         + public_results(study)
         + "\n"
         + public_table(study)
+        + photo_section(study)
         + '\n<h3 id="s:dose">色転写の量と手がかり</h3>\n'
         + dose_results(study)
         + '\n<figure id="f:dose"><img src="figs/fig_dose.svg" alt="色転写の量と手がかり" style="width:100%"><figcaption><span class="no">図</span>色転写の量に対する、(a)内側と外側の分布のバタチャリヤ係数、(b)手がかりの識別性能（楕円内のAUC）と色の重み、(c)前景のIoU（立ち絵1、星雲、各8試行）。</figcaption></figure>\n'

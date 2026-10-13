@@ -42,5 +42,6 @@
   "najman2013": "L. Najman, J. Cousty, and B. Perret, “Playing with Kruskal: Algorithms for morphological trees in edge-weighted graphs,” in <i>Mathematical Morphology and Its Applications to Signal and Image Processing (ISMM 2013)</i>, Lecture Notes in Computer Science, pp. 135–146, 2013. doi:10.1007/978-3-642-38294-9_12",
   "cousty2018": "J. Cousty, L. Najman, Y. Kenmochi, and S. Guimarães, “Hierarchical segmentations with graphs: Quasi-flat zones, minimum spanning trees, and saliency maps,” <i>J. Mathematical Imaging and Vision</i>, vol. 60, no. 4, pp. 479–502, 2018. doi:10.1007/s10851-017-0768-7",
   "collins2005": "R. T. Collins, Y. Liu, and M. Leordeanu, “Online selection of discriminative tracking features,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 27, no. 10, pp. 1631–1643, 2005. doi:10.1109/TPAMI.2005.205",
-  "li2023": "J. Li, J. Jain, and H. Shi, “Matting Anything,” arXiv:2306.05399, 2023."
+  "li2023": "J. Li, J. Jain, and H. Shi, “Matting Anything,” arXiv:2306.05399, 2023.",
+  "ke2022": "Z. Ke, J. Sun, K. Li, Q. Yan, and R. W. H. Lau, “MODNet: Real-time trimap-free portrait matting via objective decomposition,” in <i>Proc. AAAI Conf. Artificial Intelligence</i>, vol. 36, no. 1, pp. 1140–1147, 2022. doi:10.1609/aaai.v36i1.19999"
 }

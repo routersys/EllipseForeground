@@ -41,11 +41,13 @@ SUBSETS = {
         Subset("collection100", "collection100", "17体・転写100%", "17体の転写100%"),
         Subset("public0", "public0", "公開素材・転写0%", "公開素材の転写0%"),
         Subset("public100", "public100", "公開素材・転写100%", "公開素材の転写100%"),
+        Subset("photo", "photo", "写真（PPM-100）", "写真"),
     )
 }
 SETS = ("sprite1", "sprite2", "collection0", "collection100", "public0", "public100")
 EARLIER_SETS = ("sprite1", "sprite2", "collection0", "collection100")
 PUBLIC_SETS = ("public0", "public100")
+PHOTO_SET = "photo"
 DESIGN_SETS = ("sprite1", "collection0", "collection100")
 DOSES = ("dose0", "dose25", "dose50", "dose75", "dose100")
 METHODS = ("ellipse", "prior", "tex", "app", "mix", "adaptive_c", "adaptive", "oracle")

@@ -5,11 +5,12 @@ import numpy as np
 from ellipse_foreground.evaluation.own import CANVAS_HEIGHT as STAND_HEIGHT
 from ellipse_foreground.evaluation.own import CANVAS_WIDTH as STAND_WIDTH
 from ellipse_foreground.evaluation.own import own_reconstruction
-from ellipse_foreground.evaluation.runner import GROUPS
+from ellipse_foreground.evaluation.photos import PHOTO_WIDTH
+from ellipse_foreground.evaluation.runner import GROUPS, PHOTO_TRIALS
 from ellipse_foreground.evaluation.sprites import CANVAS_HEIGHT, CANVAS_WIDTH
 from ellipse_foreground.settings import DEFAULT_SETTINGS
 from paper.numbers import plain
-from paper.results import SETS
+from paper.results import PHOTO_SET, SETS
 from paper.sections.closing import abstract
 from paper.study import Study
 from paper.table import table_html
@@ -63,6 +64,18 @@ def data_table(study: Study) -> str:
         size = f"{STAND_WIDTH}×{STAND_HEIGHT}" if stand else f"{CANVAS_WIDTH}×{CANVAS_HEIGHT}"
         unit = f"{scenes}条件" if stand else f"{scenes}場面"
         rows.append([SET_TITLES[key], size, unit, count, TRUTH_SOURCE[key], DESIGN_USE[key]])
+    photos = study.results.scenes(PHOTO_SET)
+    count = len(study.results.trials(PHOTO_SET))
+    rows.append(
+        [
+            "写真（PPM-100）",
+            f"幅{PHOTO_WIDTH}以下",
+            f"{photos}枚",
+            f"{count}（各{PHOTO_TRIALS}まで）",
+            "手作業のアルファ",
+            "いいえ",
+        ]
+    )
     return table_html(
         "t:data",
         "評価に用いる画像データセット。試行は、誤差モデルMで引いた楕円の一つを指す。色転写の強さは、0%が変換なし、100%が前景の色の平均と標準偏差を背景に完全に合わせる場合である。",

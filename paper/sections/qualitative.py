@@ -2,7 +2,7 @@ from paper.figures.qualitative import RENDER_PICKS, Pick, qualitative_picks, rep
 from paper.markup import figure
 from paper.numbers import f2
 from paper.results import TREE
-from paper.sections.main import METHOD_LABELS
+from paper.sections.labels import METHOD_LABELS
 from paper.study import Study
 
 ROW_NAMES = (
