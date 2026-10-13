@@ -25,10 +25,10 @@ METHOD_HEADERS = {
     "prior": "事前分布<br>のみ",
     "tex": "テクスチャ<br>のみ",
     "app": "色と<br>パッチのみ",
-    "mix": "固定<br>配合",
+    "mix": "固定<br>重み",
     "adaptive_c": "適応<br>（色）",
     "adaptive": "適応（色と<br>パッチ）",
-    "oracle": "正解の<br>事前分布",
+    "oracle": "正解<br>スコア",
 }
 METHOD_LABELS = {
     "ellipse": "楕円をそのまま使用",
@@ -172,10 +172,10 @@ def public_results(study: Study) -> str:
         f'<p>手法の設計と定数の選択に使っていない公開素材の17枚（<ref k="s:data"></ref>）で評価した結果を、<ref k="t:iou"></ref>と<ref k="t:mae"></ref>の最後の2行に示す。'
         "境界項の倍率、グラフカットの \\(\\lambda\\)、手がかりの重みを含め、すべての定数は他のデータセットで定めた値のままである。"
         f"場面数は転写0%と100%のそれぞれで{scenes}、試行数は{trials}である。</p>\n"
-        f"<p>楕円をそのまま使うとIoUは転写0%で{f3(ellipse[0])}、100%で{f3(ellipse[1])}である。適応（色）では{f3(adaptive[0])}と{f3(adaptive[1])}になり、事前分布のみでは{f3(prior[0])}と{f3(prior[1])}である。"
-        f"正解スコアを用いたときの上限は{f3(oracle[0])}と{f3(oracle[1])}である。"
+        f"<p>楕円をそのまま使うとIoUは転写0%で{f3(ellipse[0])}、100%で{f3(ellipse[1])}になる。適応（色）では{f3(adaptive[0])}と{f3(adaptive[1])}になり、事前分布のみでは{f3(prior[0])}と{f3(prior[1])}である。"
+        f"正解スコアを用いると、上限は{f3(oracle[0])}と{f3(oracle[1])}になる。"
         f"手がかりの構成のうち、IoUが最大なのは、転写0%で{METHOD_LABELS[best[zero]]}（{f3(study.mean(zero, best[zero]))}）、100%で{METHOD_LABELS[best[full]]}（{f3(study.mean(full, best[full]))}）である。"
-        f"固定重みと最良の構成のIoUの差は、転写0%で{f3(regret[zero])}、100%で{f3(regret[full])}である。</p>\n"
+        f"固定重みと最良の構成のIoUの差は、転写0%で{f3(regret[zero])}、100%で{f3(regret[full])}にとどまる。</p>\n"
         "<p>構成どうしの差は、場面を単位とする信頼区間とあわせて次のとおりである。"
         f"固定重みのテクスチャのみに対するIoUの差は、転写0%で{d(zero, 'mix', 'tex')}、100%で{d(full, 'mix', 'tex')}である。"
         f"固定重みの色とパッチのみに対する差は、転写0%で{d(zero, 'mix', 'app')}、100%で{d(full, 'mix', 'app')}である。"

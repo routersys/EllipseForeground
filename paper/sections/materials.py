@@ -31,12 +31,12 @@ TRUTH_SOURCE = {
     "public100": "アルファチャンネル",
 }
 DESIGN_USE = {
-    "sprite1": "使用",
-    "sprite2": "未使用",
-    "collection0": "使用",
-    "collection100": "使用",
-    "public0": "未使用",
-    "public100": "未使用",
+    "sprite1": "はい",
+    "sprite2": "いいえ",
+    "collection0": "はい",
+    "collection100": "はい",
+    "public0": "いいえ",
+    "public100": "いいえ",
 }
 SET_TITLES = {
     "sprite1": "立ち絵1",
@@ -65,8 +65,8 @@ def data_table(study: Study) -> str:
         rows.append([SET_TITLES[key], size, unit, count, TRUTH_SOURCE[key], DESIGN_USE[key]])
     return table_html(
         "t:data",
-        "評価に用いる画像データセット。試行は、誤差モデルMで引いた楕円の一つを指す。",
-        ["データセット", "画像の大きさ", "条件・場面", "試行数", "正解の取得", "設計への使用"],
+        "評価に用いる画像データセット。試行は、誤差モデルMで引いた楕円の一つを指す。色転写の強さは、0%が変換なし、100%が前景の色の平均と標準偏差を背景に完全に合わせる場合である。",
+        ["データセット", "画像の大きさ", "条件・場面", "試行数", "正解の取得", "開発用"],
         rows,
         align=["l", "", "", "", "", ""],
     )

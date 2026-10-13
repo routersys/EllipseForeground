@@ -14,7 +14,7 @@ from paper.results import (
     SUBSETS,
     WORK_WIDTHS,
 )
-from paper.study import Study
+from paper.study import Study, Timing
 from paper.table import table_html
 
 FORMS = (
@@ -155,7 +155,7 @@ def forms_section(study: Study) -> str:
         "開発用の<br>画像の平均",
         "倍率を<br>1/4倍",
         "倍率を<br>4倍",
-        "正解の<br>事前分布",
+        "正解<br>スコア",
     ]
     table = table_html(
         "t:forms",
@@ -181,9 +181,21 @@ def forms_section(study: Study) -> str:
     spread = max(per_best.values()) / min(per_best.values())
     low_spread = max(-lower[form] for form, _ in FORMS) - min(-lower[form] for form, _ in FORMS)
     text = f"""<p>境界項の三つの形（<ref k="s:boundary"></ref>）を、同じスコア（適応（色））のもとで比べる（<ref k="t:forms"></ref>、<ref k="f:reg"></ref>上段）。倍率は形ごとに、開発用の画像の平均IoUが最大になる値を選んだ。選んだ倍率での開発用の画像の平均IoUは、平均類似度型が{f3(design[mean_form])}、総和型が{f3(design[sum_form])}、併合高さ型が{f3(design[height_form])}で、差は{ceil3(max(design.values()) - min(design.values()))}以内である。境界項の強さを調整すれば、三つの形の精度は同程度になる。</p>
-<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均類似度型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均類似度型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も弱い一本の弱さを使う。この値は境界辺の弱さの平均以上なので、同じ倍率でもペナルティが強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均類似度型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解スコアを用いたときのIoUは、総和型が{f3(oracle[sum_form])}、平均類似度型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
+<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均類似度型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均類似度型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も類似度が高い一本の類似度を使う。この値は境界辺の類似度の平均以上なので、同じ倍率でもペナルティが強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均類似度型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解スコアを用いたときのIoUは、総和型が{f3(oracle[sum_form])}、平均類似度型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
 <p>最適な倍率はデータセットによって異なる。平均類似度型では、立ち絵1が{plain(per_best["sprite1"])}、立ち絵2が{plain(per_best["sprite2"])}、17体の転写0%が{plain(per_best["collection0"])}、転写100%が{plain(per_best["collection100"])}で最大になり、最大で{spread:.0f}倍の差がある。倍率を{plain(strength[mean_form])}の一つに決めると、各データセットの最良に対するIoUの低下は、立ち絵1で{f3_zero(-gap["sprite1"])}、立ち絵2で{f3_zero(-gap["sprite2"])}、17体の転写0%で{f3_zero(-gap["collection0"])}、転写100%で{f3_zero(-gap["collection100"])}である。境界項をなくすと、IoUは{f3(curves.none["sprite1"])}、{f3(curves.none["sprite2"])}、{f3(curves.none["collection0"])}、{f3(curves.none["collection100"])}に下がり、いずれのデータセットでも境界項は有効である。</p>"""
     return text + "\n" + table
+
+
+def boykov_kolmogorov_sentence(timing: Timing) -> str:
+    cite = '<cite k="boykov2004"></cite>'
+    if timing.boykov_kolmogorov_ms is None:
+        return f"Dinic法は単純な実装であり、BoykovとKolmogorovのアルゴリズム{cite}のように、最小カットをより速く求める実装もあるため、この比は実装によって変わる。"
+    return (
+        f"Dinic法は単純な実装であり、画像の格子グラフでは、BoykovとKolmogorovのアルゴリズム{cite}のほうが速い。"
+        f"同じ問題を、KolmogorovによるC++の実装を呼び出す{timing.boykov_kolmogorov_library}で解き、maxflowの呼び出しだけの時間を測ると、"
+        f"1回あたり中央値{timing.boykov_kolmogorov_ms:.2f}ミリ秒で、木の動的計画法の約{timing.boykov_kolmogorov_ratio:.1f}倍である。"
+        "この値にはグラフの構築を含めず、実装の言語もC#ではなくC++であるため、木の動的計画法との比は目安にとどまる。"
+    )
 
 
 def graph_cut_values(study: Study) -> dict[str, dict[int, float]]:
@@ -271,12 +283,12 @@ def graph_cut_section(study: Study) -> str:
         else ""
     )
     paragraphs = [
-        "<p>同じスコア \\(u\\)、同じ辺の重み \\(\\omega_e\\)、同じ精緻化のもとで、画素単位のグラフカットと比べる。グラフカットは、"
+        "<p>同じスコア \\(u\\)、同じ辺の類似度 \\(\\omega_e\\)、同じ精緻化のもとで、画素単位のグラフカットと比べる。グラフカットは、"
         '前景の画素の集合を \\(F\\) として、\\(-\\sum_{p\\in F}u(p)+\\lambda\\sum_{(p,q):\\,p\\in F,\\,q\\notin F}\\omega_{pq}\\) を、画素の4近傍のグラフ上で最小カットにより最小にする<cite k="boykov2001"></cite>。'
         f'\\(\\lambda\\) は、開発用の画像の平均IoUが最大になる{plain(smoothness)}とした（<ref k="f:reg"></ref>下段）。</p>',
         f'<p><ref k="t:tvg"></ref>に結果を示す。{higher_sentence}{lower_sentence}{unclear}'
         f"MAEの差は、六つのデータセットの順に{'、'.join(signed(error[key]) for key in SETS)}で、{error_note}。"
-        "木の切断が選べるのは、単連結の併合で作った領域だけであり、輪郭が弱い場所で背景の領域と細くつながっていると、その部分だけを分けられないことがある。"
+        "木の切断が選べるのは、単連結の併合で作った領域だけであり、輪郭のコントラストが低い場所で背景の領域と細くつながっていると、その部分だけを分けられないことがある。"
         f"{dependence}"
         f"グラフカットの \\(\\lambda\\) も、データセットごとの最良の値が{plain(2.0**smallest)}から{plain(2.0**largest)}まで変わる。</p>",
     ]
@@ -285,10 +297,11 @@ def graph_cut_section(study: Study) -> str:
         paragraphs.append(
             f"<p>最適化1回の計算時間を、同じスコアのもとで測った。幅256の画像（\\(N\\) は{timing.pixel_count}）の{timing.instances}場面について、計{timing.problems}個のスコアを解いた。"
             f"木の動的計画法（C#、単一スレッド、スコアの合計から切断の復元まで）は1回あたり中央値{timing.tree_ms:.2f}ミリ秒、"
-            f"同じ画素グラフに対する素朴な Dinic 法による最小カット（C#）は{timing.graph_cut_ms:.1f}ミリ秒で、約{timing.ratio:.0f}倍である。"
+            f"同じ画素グラフに対するDinic法による最小カット（C#）は{timing.graph_cut_ms:.1f}ミリ秒で、約{timing.ratio:.0f}倍である。"
             f"どちらも、木とグラフの構築と、1回目の実行を除いた、2回目の実行の時間を問題数で割った値である。測定は{timing.environment}で行った。"
-            "木の構築と境界項の計算は画像ごとに1回で済み、楕円を動かす操作では、スコアの再計算のあとに動的計画法だけを繰り返す。"
-            '画像のグラフでは、BoykovとKolmogorovのアルゴリズム<cite k="boykov2004"></cite>のように、最小カットをより速く求める実装もあり、この比は実装によって変わる。</p>'
+            "他の処理の影響で、測定のたびに値は変わる。"
+            f"{boykov_kolmogorov_sentence(timing)}"
+            "木の構築と境界項の計算は画像ごとに1回で済み、楕円を動かす操作では、スコアの再計算のあとに動的計画法だけを繰り返す。</p>"
         )
     return "\n".join(paragraphs) + "\n" + table
 
@@ -334,7 +347,7 @@ def resolution_section(study: Study) -> str:
     ]
     texture_table = table_html(
         "t:texres",
-        "テクスチャの手がかりを計算する入力画像の解像度と、切断のIoU（精緻化前の二値マスク）。「固定の重み」は、テクスチャの重みを1.0、色とパッチの重みを適応（色）の値にした構成である。",
+        "テクスチャの手がかりを計算する入力画像の解像度と、切断のIoU（精緻化前の二値マスク）。「併用」は、テクスチャの重みを1.0、色とパッチの重みを適応（色）の値にした構成である。",
         [
             "テクスチャの入力",
             *(COLUMN_NAMES[key] for key in EARLIER_SETS),
@@ -343,7 +356,7 @@ def resolution_section(study: Study) -> str:
         texture_rows,
         align=["l", *[""] * 8],
         widths=["24%", *["9.5%"] * 8],
-        group=[("", 1), ("テクスチャのみ", 4), ("固定の重み", 4)],
+        group=[("", 1), ("テクスチャのみ", 4), ("併用", 4)],
     )
     width_rows = [
         [str(width), *(f"{f3(widths[width][key][0])} / {f2(widths[width][key][1])}" for key in EARLIER_SETS)]
@@ -500,7 +513,7 @@ def models_section(study: Study) -> str:
             "楕円を<br>そのまま",
             "事前分布<br>のみ",
             "テクスチャ<br>のみ",
-            "正解の<br>事前分布",
+            "正解<br>スコア",
         ],
         rows,
         align=["l", "l", *[""] * 4],
@@ -521,5 +534,5 @@ def models_section(study: Study) -> str:
         )
         order = f"{scope}の{len(iou)}通りのうち{len(ordered)}通りで、{sequence}例外は、{listed}である。"
     harder = {key: iou[(key, "L")]["tex"][0] - iou[(key, "T")]["tex"][0] for key in EARLIER_SETS}
-    text = f"""<p>楕円の誤差モデルを変えた結果を<ref k="t:models"></ref>に示す（<ref k="s:noise"></ref>）。{order}テクスチャの手がかりによる事前分布のみに対する向上は、{signed(min(gain.values()))}から{signed(max(gain.values()))}の範囲である。誤差が小さいモデルTから大きいモデルLに変えたときのテクスチャのみのIoUの変化は、立ち絵1で{signed(harder["sprite1"])}、立ち絵2で{signed(harder["sprite2"])}、17体の転写0%と100%で{signed(harder["collection0"])}と{signed(harder["collection100"])}である。</p>"""
+    text = f"""<p>楕円の誤差モデルを変えた結果を<ref k="t:models"></ref>に示す（<ref k="s:noise"></ref>）。{order}テクスチャの手がかりによる事前分布のみに対する向上は、{signed(min(gain.values()))}から{signed(max(gain.values()))}の範囲に収まる。誤差が小さいモデルTから大きいモデルLに変えたときのテクスチャのみのIoUの変化は、立ち絵1で{signed(harder["sprite1"])}、立ち絵2で{signed(harder["sprite2"])}、17体の転写0%と100%で{signed(harder["collection0"])}と{signed(harder["collection100"])}である。</p>"""
     return text + "\n" + table
