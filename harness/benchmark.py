@@ -47,16 +47,16 @@ def stage_timings(context: CaseContext, scene_name: str, settings: Settings) -> 
             ),
         ),
         ("信頼度", measure(lambda: analysis.overlaps(regions))),
-        ("木の最適切断", measure(lambda: analysis.cut(scores))),
+        ("木の最適な切断", measure(lambda: analysis.cut(scores))),
         ("グラフカット", measure(lambda: analysis.graph_cut(scores))),
-        ("縁の仕上げ", measure(lambda: analysis.finish(mask))),
+        ("精緻化", measure(lambda: analysis.finish(mask))),
         ("全体", measure(lambda: analysis.extract(trial.ellipse))),
     ]
 
 
 def benchmark(context: CaseContext) -> int:
     height, width = context.scenes[MAIN_SCENE].image.shape[:2]
-    print(f"{MAIN_SCENE} {width}x{height} 作業画像の幅 {DEFAULT_SETTINGS.work.width}(中央値 ms / 最小 ms、{ROUNDS} 回)")
+    print(f"{MAIN_SCENE} {width}x{height} 縮小画像の幅 {DEFAULT_SETTINGS.work.width}(中央値 ms / 最小 ms、{ROUNDS} 回)")
     for label, (median, fastest) in stage_timings(context, MAIN_SCENE, DEFAULT_SETTINGS):
         print(f"  {label}: {median:.1f} / {fastest:.1f}")
     return 0

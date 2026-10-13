@@ -40,7 +40,7 @@ def boundary_figure() -> str:
         "f:reg",
         "fig_reg.svg",
         "境界項の強さへの感度",
-        "境界項の強さに対するIoU（縁の仕上げ前の二値マスク、適応（色）の得点）。上段は木の切断の三つの形、下段はグラフカットで、点線は境界項なしのIoU、水平線は平均弱さ型の最良のIoUである。",
+        "境界項の強さに対するIoU（精緻化前の二値マスク、適応（色）のスコア）。上段は木の切断の三つの形、下段はグラフカットで、点線は境界項なしのIoU、水平線は平均類似度型の最良のIoUである。",
     )
 
 
@@ -56,7 +56,7 @@ def ablation_sections(study: Study) -> str:
         + resolution_section(study)
         + '\n<h3 id="s:abl_prior">事前分布の内側の強さ</h3>\n'
         + prior_section(study)
-        + '\n<h3 id="s:abl_finish">縁の仕上げ</h3>\n'
+        + '\n<h3 id="s:abl_finish">精緻化</h3>\n'
         + finish_section(study)
         + '\n<h3 id="s:abl_noise">楕円の誤差の大きさ</h3>\n'
         + models_section(study)

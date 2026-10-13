@@ -65,8 +65,8 @@ def data_table(study: Study) -> str:
         rows.append([SET_TITLES[key], size, unit, count, TRUTH_SOURCE[key], DESIGN_USE[key]])
     return table_html(
         "t:data",
-        "評価に用いる画像集合。試行は、誤差モデルMで引いた楕円の一つを指す。",
-        ["集合", "画像の大きさ", "条件・場面", "試行数", "正解の取得", "設計への使用"],
+        "評価に用いる画像データセット。試行は、誤差モデルMで引いた楕円の一つを指す。",
+        ["データセット", "画像の大きさ", "条件・場面", "試行数", "正解の取得", "設計への使用"],
         rows,
         align=["l", "", "", "", "", ""],
     )

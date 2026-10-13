@@ -134,7 +134,7 @@ def boundary_plot(study: Study, directory: Path) -> None:
     graph = graph_cut_values(study)
     figure, axes = plt.subplots(2, 4, figsize=(7.6, 4.0), sharey="col")
     styles = {
-        FORMS[0][0].value: ("平均弱さ型（採用）", COLORS["adaptive_c"], "o", "-"),
+        FORMS[0][0].value: ("平均類似度型（採用）", COLORS["adaptive_c"], "o", "-"),
         FORMS[1][0].value: ("総和型", COLORS["mix"], "^", "-."),
         FORMS[2][0].value: ("併合高さ型", COLORS["app"], "s", "--"),
     }
@@ -173,7 +173,7 @@ def boundary_plot(study: Study, directory: Path) -> None:
             color=COLORS["adaptive_c"],
             ls="-",
             lw=1.1,
-            label="木の切断（平均弱さ型の最良）" if column == 0 else None,
+            label="木の切断（平均類似度型の最良）" if column == 0 else None,
         )
         axes[0, column].set_xlabel(r"$\log_2$（境界項の倍率）", fontsize=8)
         axes[1, column].set_xlabel(r"$\log_2\,\lambda$（グラフカット）", fontsize=8)
@@ -224,7 +224,7 @@ def bars_plot(study: Study, directory: Path) -> None:
         axes[column].grid(axis="y", alpha=0.25, lw=0.6)
     axes[0].set_ylabel("前景のIoU")
     handles = [Patch(fc=COLORS[method], label=NAMES[method]) for method in methods]
-    handles.append(Line2D([0], [0], color="#6b7280", ls=":", label="正解の事前分布（上限）"))
+    handles.append(Line2D([0], [0], color="#6b7280", ls=":", label="正解スコア（上限）"))
     figure.legend(handles=handles, loc="lower center", ncol=4, frameon=False, fontsize=7.4, bbox_to_anchor=(0.5, -0.17))
     figure.tight_layout(w_pad=0.6)
     save(figure, directory, "fig_bars")

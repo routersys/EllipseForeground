@@ -18,7 +18,7 @@ from paper.study import Study
 from paper.table import table_html
 
 FORMS = (
-    (BoundaryForm.MEAN_WEAKNESS, "平均弱さ型"),
+    (BoundaryForm.MEAN_WEAKNESS, "平均類似度型"),
     (BoundaryForm.WEAKNESS_SUM, "総和型"),
     (BoundaryForm.MERGE_HEIGHT, "併合高さ型"),
 )
@@ -152,14 +152,14 @@ def forms_section(study: Study) -> str:
         "境界項の形",
         "選んだ<br>倍率",
         *(COLUMN_NAMES[key] for key in EARLIER_SETS),
-        "設計用の<br>画像の平均",
+        "開発用の<br>画像の平均",
         "倍率を<br>1/4倍",
         "倍率を<br>4倍",
         "正解の<br>事前分布",
     ]
     table = table_html(
         "t:forms",
-        "境界項の形ごとの切断のIoU（縁の仕上げ前の二値マスク）。倍率は設計用の画像（立ち絵1と17体）の平均を最大にするものを形ごとに選んだ。右の三列は、設計用の画像の平均について、選んだ倍率の1/4倍と4倍のときの変化、および正解の事前分布を得点にしたときのIoUである。",
+        "境界項の形ごとの切断のIoU（精緻化前の二値マスク）。倍率は開発用の画像（立ち絵1と17体）の平均を最大にするものを形ごとに選んだ。右の三列は、開発用の画像の平均について、選んだ倍率の1/4倍と4倍のときの変化、および正解スコアを用いたときのIoUである。",
         header,
         rows,
         align=["l", *[""] * 10],
@@ -180,9 +180,9 @@ def forms_section(study: Study) -> str:
     }
     spread = max(per_best.values()) / min(per_best.values())
     low_spread = max(-lower[form] for form, _ in FORMS) - min(-lower[form] for form, _ in FORMS)
-    text = f"""<p>境界項の三つの形（<ref k="s:boundary"></ref>）を、同じ得点（適応（色））のもとで比べる（<ref k="t:forms"></ref>、<ref k="f:reg"></ref>上段）。倍率は形ごとに、設計用の画像の平均IoUが最大になる値を選んだ。選んだ倍率での設計用の画像の平均IoUは、平均弱さ型が{f3(design[mean_form])}、総和型が{f3(design[sum_form])}、併合高さ型が{f3(design[height_form])}で、差は{ceil3(max(design.values()) - min(design.values()))}以内である。境界項の強さを調整すれば、三つの形の精度は同程度になる。</p>
-<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均弱さ型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均弱さ型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も弱い一本の弱さを使う。この値は境界辺の弱さの平均以上なので、同じ倍率でも罰が強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均弱さ型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解の事前分布を得点にしたときのIoUは、総和型が{f3(oracle[sum_form])}、平均弱さ型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
-<p>最適な倍率は集合によって異なる。平均弱さ型では、立ち絵1が{plain(per_best["sprite1"])}、立ち絵2が{plain(per_best["sprite2"])}、17体の転写0%が{plain(per_best["collection0"])}、転写100%が{plain(per_best["collection100"])}で最大になり、最大で{spread:.0f}倍の差がある。倍率を{plain(strength[mean_form])}の一つに決めると、各集合の最良に対するIoUの低下は、立ち絵1で{f3_zero(-gap["sprite1"])}、立ち絵2で{f3_zero(-gap["sprite2"])}、17体の転写0%で{f3_zero(-gap["collection0"])}、転写100%で{f3_zero(-gap["collection100"])}である。境界項をなくすと、IoUは{f3(curves.none["sprite1"])}、{f3(curves.none["sprite2"])}、{f3(curves.none["collection0"])}、{f3(curves.none["collection100"])}に下がり、いずれの集合でも境界項は有効である。</p>"""
+    text = f"""<p>境界項の三つの形（<ref k="s:boundary"></ref>）を、同じスコア（適応（色））のもとで比べる（<ref k="t:forms"></ref>、<ref k="f:reg"></ref>上段）。倍率は形ごとに、開発用の画像の平均IoUが最大になる値を選んだ。選んだ倍率での開発用の画像の平均IoUは、平均類似度型が{f3(design[mean_form])}、総和型が{f3(design[sum_form])}、併合高さ型が{f3(design[height_form])}で、差は{ceil3(max(design.values()) - min(design.values()))}以内である。境界項の強さを調整すれば、三つの形の精度は同程度になる。</p>
+<p>差は倍率への感度に現れる。選んだ倍率を4倍にすると、IoUは併合高さ型で{f3(-upper[height_form])}、総和型で{f3(-upper[sum_form])}、平均類似度型で{f3(-upper[mean_form])}下がり、{drop_names[largest_drop]}の低下が最も大きい。1/4倍にすると、総和型で{f3(-lower[sum_form])}、平均類似度型で{f3(-lower[mean_form])}、併合高さ型で{f3(-lower[height_form])}下がり、形による差は{ceil3(low_spread)}以内である。併合高さ型は、境界辺のうち最も弱い一本の弱さを使う。この値は境界辺の弱さの平均以上なので、同じ倍率でも罰が強くなり、最適な倍率が小さい（併合高さ型が{plain(strength[height_form])}、平均類似度型が{plain(strength[mean_form])}、総和型が{plain(strength[sum_form])}）。正解スコアを用いたときのIoUは、総和型が{f3(oracle[sum_form])}、平均類似度型が{f3(oracle[mean_form])}、併合高さ型が{f3(oracle[height_form])}であり、{drop_names[best_form]}が正解の形を最もよく保つ。</p>
+<p>最適な倍率はデータセットによって異なる。平均類似度型では、立ち絵1が{plain(per_best["sprite1"])}、立ち絵2が{plain(per_best["sprite2"])}、17体の転写0%が{plain(per_best["collection0"])}、転写100%が{plain(per_best["collection100"])}で最大になり、最大で{spread:.0f}倍の差がある。倍率を{plain(strength[mean_form])}の一つに決めると、各データセットの最良に対するIoUの低下は、立ち絵1で{f3_zero(-gap["sprite1"])}、立ち絵2で{f3_zero(-gap["sprite2"])}、17体の転写0%で{f3_zero(-gap["collection0"])}、転写100%で{f3_zero(-gap["collection100"])}である。境界項をなくすと、IoUは{f3(curves.none["sprite1"])}、{f3(curves.none["sprite2"])}、{f3(curves.none["collection0"])}、{f3(curves.none["collection100"])}に下がり、いずれのデータセットでも境界項は有効である。</p>"""
     return text + "\n" + table
 
 
@@ -222,7 +222,7 @@ def graph_cut_section(study: Study) -> str:
             ]
         )
     header = [
-        "集合",
+        "データセット",
         "木の切断<br>IoU",
         "グラフカット<br>IoU",
         "IoUの差<br>［95%信頼区間］",
@@ -232,7 +232,7 @@ def graph_cut_section(study: Study) -> str:
     ]
     table = table_html(
         "t:tvg",
-        "木の切断とグラフカットの比較（適応（色）の得点、縁の仕上げ後）。差はグラフカットから木の切断を引いた値で、場面を単位とするブートストラップ法で求めた。",
+        "木の切断とグラフカットの比較（適応（色）のスコア、精緻化後）。差はグラフカットから木の切断を引いた値で、場面を単位とするブートストラップ法で求めた。",
         header,
         rows,
         align=["l", *[""] * 6],
@@ -251,11 +251,11 @@ def graph_cut_section(study: Study) -> str:
             f"グラフカットのIoUは、{higher}で、信頼区間が0を含まない差で木の切断より高い（差は順に{higher_values}）。"
         )
     else:
-        higher_sentence = "信頼区間が0を含まない差でグラフカットのIoUが木の切断より高い集合はない。"
+        higher_sentence = "信頼区間が0を含まない差でグラフカットのIoUが木の切断より高いデータセットはない。"
     if comparison.lower:
         lower_sentence = f"木の切断のほうが高いのは、{lower}である（差は{lower_values}）。"
     else:
-        lower_sentence = "信頼区間が0を含まない差で木の切断のほうが高い集合はない。"
+        lower_sentence = "信頼区間が0を含まない差で木の切断のほうが高いデータセットはない。"
     error = comparison.error_difference
     error_note = (
         "いずれもグラフカットのほうが小さく、信頼区間は0を含まない"
@@ -266,28 +266,28 @@ def graph_cut_section(study: Study) -> str:
     undecided = [key for key in SETS if key not in comparison.higher + comparison.lower]
     unclear = f"{'、'.join(names[key] for key in undecided)}では、差の信頼区間が0を含む。" if undecided else ""
     dependence = (
-        "色転写100%の集合どうしでも、17体では木の切断が、公開素材ではグラフカットが高く、この向きは画像の集合に依存する。"
+        "色転写100%のデータセットどうしでも、17体では木の切断が、公開素材ではグラフカットが高く、この向きは画像のデータセットに依存する。"
         if "collection100" in comparison.lower and "public100" in comparison.higher
         else ""
     )
     paragraphs = [
-        "<p>同じ得点 \\(u\\)、同じ辺の重み \\(\\omega_e\\)、同じ縁の仕上げのもとで、画素単位のグラフカットと比べる。グラフカットは、"
+        "<p>同じスコア \\(u\\)、同じ辺の重み \\(\\omega_e\\)、同じ精緻化のもとで、画素単位のグラフカットと比べる。グラフカットは、"
         '前景の画素の集合を \\(F\\) として、\\(-\\sum_{p\\in F}u(p)+\\lambda\\sum_{(p,q):\\,p\\in F,\\,q\\notin F}\\omega_{pq}\\) を、画素の4近傍のグラフ上で最小カットにより最小にする<cite k="boykov2001"></cite>。'
-        f'\\(\\lambda\\) は、設計用の画像の平均IoUが最大になる{plain(smoothness)}とした（<ref k="f:reg"></ref>下段）。</p>',
+        f'\\(\\lambda\\) は、開発用の画像の平均IoUが最大になる{plain(smoothness)}とした（<ref k="f:reg"></ref>下段）。</p>',
         f'<p><ref k="t:tvg"></ref>に結果を示す。{higher_sentence}{lower_sentence}{unclear}'
-        f"MAEの差は、六つの集合の順に{'、'.join(signed(error[key]) for key in SETS)}で、{error_note}。"
+        f"MAEの差は、六つのデータセットの順に{'、'.join(signed(error[key]) for key in SETS)}で、{error_note}。"
         "木の切断が選べるのは、単連結の併合で作った領域だけであり、輪郭が弱い場所で背景の領域と細くつながっていると、その部分だけを分けられないことがある。"
         f"{dependence}"
-        f"グラフカットの \\(\\lambda\\) も、集合ごとの最良の値が{plain(2.0**smallest)}から{plain(2.0**largest)}まで変わる。</p>",
+        f"グラフカットの \\(\\lambda\\) も、データセットごとの最良の値が{plain(2.0**smallest)}から{plain(2.0**largest)}まで変わる。</p>",
     ]
     if study.timing:
         timing = study.timing
         paragraphs.append(
-            f"<p>最適化1回の計算時間を、同じ得点のもとで測った。幅256の画像（\\(N\\) は{timing.pixel_count}）の{timing.instances}場面について、計{timing.problems}個の得点を解いた。"
-            f"木の動的計画法（C#、単一スレッド、得点の合計から切断の復元まで）は1回あたり中央値{timing.tree_ms:.2f}ミリ秒、"
+            f"<p>最適化1回の計算時間を、同じスコアのもとで測った。幅256の画像（\\(N\\) は{timing.pixel_count}）の{timing.instances}場面について、計{timing.problems}個のスコアを解いた。"
+            f"木の動的計画法（C#、単一スレッド、スコアの合計から切断の復元まで）は1回あたり中央値{timing.tree_ms:.2f}ミリ秒、"
             f"同じ画素グラフに対する素朴な Dinic 法による最小カット（C#）は{timing.graph_cut_ms:.1f}ミリ秒で、約{timing.ratio:.0f}倍である。"
             f"どちらも、木とグラフの構築と、1回目の実行を除いた、2回目の実行の時間を問題数で割った値である。測定は{timing.environment}で行った。"
-            "木の構築と境界項の計算は画像ごとに1回で済み、楕円を動かす操作では、得点の再計算のあとに動的計画法だけを繰り返す。"
+            "木の構築と境界項の計算は画像ごとに1回で済み、楕円を動かす操作では、スコアの再計算のあとに動的計画法だけを繰り返す。"
             '画像のグラフでは、BoykovとKolmogorovのアルゴリズム<cite k="boykov2004"></cite>のように、最小カットをより速く求める実装もあり、この比は実装によって変わる。</p>'
         )
     return "\n".join(paragraphs) + "\n" + table
@@ -334,7 +334,7 @@ def resolution_section(study: Study) -> str:
     ]
     texture_table = table_html(
         "t:texres",
-        "テクスチャの手がかりを計算する入力画像の解像度と、切断のIoU（縁の仕上げ前の二値マスク）。「固定の重み」は、テクスチャの重みを1.0、色とパッチの重みを適応（色）の値にした構成である。",
+        "テクスチャの手がかりを計算する入力画像の解像度と、切断のIoU（精緻化前の二値マスク）。「固定の重み」は、テクスチャの重みを1.0、色とパッチの重みを適応（色）の値にした構成である。",
         [
             "テクスチャの入力",
             *(COLUMN_NAMES[key] for key in EARLIER_SETS),
@@ -351,8 +351,8 @@ def resolution_section(study: Study) -> str:
     ]
     width_table = table_html(
         "t:res",
-        "作業画像の幅 \\(L\\) と、前景のIoU / MAE（テクスチャのみ、縁の仕上げ後）。17体の集合は3場面ごとに1場面で評価した。",
-        ["作業画像の幅 \\(L\\)", *(COLUMN_NAMES[key] for key in EARLIER_SETS)],
+        "縮小画像の幅 \\(L\\) と、前景のIoU / MAE（テクスチャのみ、精緻化後）。17体のデータセットは3場面ごとに1場面で評価した。",
+        ["縮小画像の幅 \\(L\\)", *(COLUMN_NAMES[key] for key in EARLIER_SETS)],
         width_rows,
         align=["l", *[""] * 4],
     )
@@ -375,11 +375,11 @@ def resolution_section(study: Study) -> str:
     settled = (
         f"変化の絶対値は{ceil3(largest_step)}以下で、幅を256より大きくしても、IoUはほとんど変わらない。"
         if largest_step <= SETTLED_STEP
-        else "幅を256より大きくしたときの変化は、集合により異なる。"
+        else "幅を256より大きくしたときの変化は、データセットにより異なる。"
     )
 
     text = f"""<p>テクスチャの手がかりを、原寸画像と、縮小した画像から計算したときの比較を<ref k="t:texres"></ref>に示す。入力を1/2（幅640）に縮小すると、テクスチャのみのIoUは、立ち絵1で{f3(drop_half["sprite1"])}、立ち絵2で{f3(drop_half["sprite2"])}、17体の転写0%と100%で{f3(drop_half["collection0"])}と{f3(drop_half["collection100"])}下がる。1/4（幅320）では、それぞれ{f3(drop_quarter["sprite1"])}、{f3(drop_quarter["sprite2"])}、{f3(drop_quarter["collection0"])}、{f3(drop_quarter["collection100"])}下がる。色とパッチを併用した場合も、1/2への縮小で{f3(drop_half_mix["sprite1"])}、{f3(drop_half_mix["sprite2"])}、{f3(drop_half_mix["collection0"])}、{f3(drop_half_mix["collection100"])}下がる。平坦な領域は縮小の平均で失われるため、テクスチャの手がかりは原寸の画素から計算する。</p>
-<p>作業画像の幅 \\(L\\)（<ref k="s:work"></ref>）を変えた結果を<ref k="t:res"></ref>に示す。\\(L=128\\) から256に上げると、テクスチャのみのIoUは、立ち絵1で{step(128, 256, "sprite1")}、17体の転写0%と100%で{step(128, 256, "collection0")}と{step(128, 256, "collection100")}変わり、立ち絵2では{step(128, 256, "sprite2")}変わる。256から384への変化は、立ち絵1で{step(256, 384, "sprite1")}、立ち絵2で{step(256, 384, "sprite2")}、17体で{step(256, 384, "collection0")}と{step(256, 384, "collection100")}である。{settled}</p>"""
+<p>縮小画像の幅 \\(L\\)（<ref k="s:work"></ref>）を変えた結果を<ref k="t:res"></ref>に示す。\\(L=128\\) から256に上げると、テクスチャのみのIoUは、立ち絵1で{step(128, 256, "sprite1")}、17体の転写0%と100%で{step(128, 256, "collection0")}と{step(128, 256, "collection100")}変わり、立ち絵2では{step(128, 256, "sprite2")}変わる。256から384への変化は、立ち絵1で{step(256, 384, "sprite1")}、立ち絵2で{step(256, 384, "sprite2")}、17体で{step(256, 384, "collection0")}と{step(256, 384, "collection100")}である。{settled}</p>"""
     return text + "\n" + texture_table + "\n" + width_table
 
 
@@ -405,8 +405,8 @@ def prior_section(study: Study) -> str:
     best_cells = {(int(np.argmax(column)), index + 1) for index, column in enumerate(columns)}
     table = table_html(
         "t:gamma",
-        "事前分布の内側の縮小率 \\(\\gamma\\) を変えたときの切断のIoU（縁の仕上げ前の二値マスク、適応（色）の得点）。各列の最大を太字で示す。",
-        ["内側の縮小率 γ", *(COLUMN_NAMES[key] for key in EARLIER_SETS), "設計用の<br>画像の平均"],
+        "事前分布の内側の縮小率 \\(\\gamma\\) を変えたときの切断のIoU（精緻化前の二値マスク、適応（色）のスコア）。各列の最大を太字で示す。",
+        ["内側の縮小率 γ", *(COLUMN_NAMES[key] for key in EARLIER_SETS), "開発用の<br>画像の平均"],
         rows,
         align=["l", *[""] * 5],
         best=best_cells,
@@ -421,7 +421,7 @@ def prior_section(study: Study) -> str:
         "stand": float(np.mean([study.results.occupancy(key) for key in ("sprite1", "sprite2")])),
         "collection": study.results.occupancy("collection0"),
     }
-    text = f"""<p>事前分布の内側の縮小率 \\(\\gamma\\)（<ref k="s:prior"></ref>）を変えた結果を<ref k="t:gamma"></ref>に示す。立ち絵1では \\(\\gamma={plain(best["sprite1"])}\\)、立ち絵2では \\(\\gamma={plain(best["sprite2"])}\\) で最大になるのに対し、17体では、転写0%が \\(\\gamma={plain(best["collection0"])}\\)、転写100%が \\(\\gamma={plain(best["collection100"])}\\) で最大になり、内側の正の得点を弱めるほどIoUが高い。\\(\\gamma={plain(default)}\\) と最良の差は、立ち絵1で{gap("sprite1")}、立ち絵2で{gap("sprite2")}、17体の転写0%で{gap("collection0")}、転写100%で{gap("collection100")}である。誤差モデルMで楕円の内側を前景が占める割合は、立ち絵では約{occupancy["stand"]:.2f}、17体では約{occupancy["collection"]:.2f}であり（<ref k="s:noise"></ref>）、内側の割合が小さい集合ほど、内側の事前分布を弱めたときのIoUが高い。\\(\\gamma\\) もまた、集合により最適値が異なる定数である。</p>"""
+    text = f"""<p>事前分布の内側の縮小率 \\(\\gamma\\)（<ref k="s:prior"></ref>）を変えた結果を<ref k="t:gamma"></ref>に示す。立ち絵1では \\(\\gamma={plain(best["sprite1"])}\\)、立ち絵2では \\(\\gamma={plain(best["sprite2"])}\\) で最大になるのに対し、17体では、転写0%が \\(\\gamma={plain(best["collection0"])}\\)、転写100%が \\(\\gamma={plain(best["collection100"])}\\) で最大になり、内側の正のスコアを弱めるほどIoUが高い。\\(\\gamma={plain(default)}\\) と最良の差は、立ち絵1で{gap("sprite1")}、立ち絵2で{gap("sprite2")}、17体の転写0%で{gap("collection0")}、転写100%で{gap("collection100")}である。誤差モデルMで楕円の内側を前景が占める割合は、立ち絵では約{occupancy["stand"]:.2f}、17体では約{occupancy["collection"]:.2f}であり（<ref k="s:noise"></ref>）、内側の割合が小さいデータセットほど、内側の事前分布を弱めたときのIoUが高い。\\(\\gamma\\) もまた、データセットにより最適値が異なる定数である。</p>"""
     return text + "\n" + table
 
 
@@ -444,8 +444,8 @@ def finish_section(study: Study) -> str:
     ]
     table = table_html(
         "t:finish",
-        "縁の仕上げの各段の効果（前景のIoU / MAE）。切断は適応（色）の得点を使う木の切断で、立ち絵1、立ち絵2、17体の全試行から求めた。",
-        ["縁の仕上げ", *(COLUMN_NAMES[key] for key in EARLIER_SETS)],
+        "精緻化の各段の効果（前景のIoU / MAE）。切断は適応（色）のスコアを使う木の切断で、立ち絵1、立ち絵2、17体の全試行から求めた。",
+        ["精緻化", *(COLUMN_NAMES[key] for key in EARLIER_SETS)],
         rows,
         align=["l", *[""] * 4],
         widths=["44%", "14%", "14%", "14%", "14%"],
@@ -454,7 +454,7 @@ def finish_section(study: Study) -> str:
     def change(first: str, second: str, key: str, index: int = 1, digits: int = 2) -> str:
         return signed(values[(second, key)][index] - values[(first, key)][index], digits)
 
-    text = f"""<p>縁の仕上げの各段を<ref k="t:finish"></ref>に示す。二値マスクを双一次に拡大するだけの場合に対し、ジョイントバイラテラルアップサンプリングによるMAEの変化は、立ち絵1で{change("bilinear", "jbu", "sprite1")}、立ち絵2で{change("bilinear", "jbu", "sprite2")}、17体の転写0%と100%で{change("bilinear", "jbu", "collection0")}と{change("bilinear", "jbu", "collection100")}である。全画素に色の補正をかけると、MAEは立ち絵1で{f2(values[("jbu_lut", "sprite1")][1])}、17体の転写0%で{f2(values[("jbu_lut", "collection0")][1])}と、補正をかけない場合の{f2(values[("jbu", "sprite1")][1])}と{f2(values[("jbu", "collection0")][1])}より大きくなる。補正の対象を境界付近の帯に限ると、MAEは立ち絵1で{f2(values[("jbu_lutband", "sprite1")][1])}、17体の転写0%で{f2(values[("jbu_lutband", "collection0")][1])}と、補正をかけない場合と同程度になる。ガイデッドフィルタを加えたときのIoUの変化は、立ち絵1で{change("jbu_lutband", "final", "sprite1", 0, 3)}、立ち絵2で{change("jbu_lutband", "final", "sprite2", 0, 3)}、17体の転写0%と100%で{change("jbu_lutband", "final", "collection0", 0, 3)}と{change("jbu_lutband", "final", "collection100", 0, 3)}である。</p>"""
+    text = f"""<p>精緻化の各段を<ref k="t:finish"></ref>に示す。二値マスクを双一次に拡大するだけの場合に対し、ジョイントバイラテラルアップサンプリングによるMAEの変化は、立ち絵1で{change("bilinear", "jbu", "sprite1")}、立ち絵2で{change("bilinear", "jbu", "sprite2")}、17体の転写0%と100%で{change("bilinear", "jbu", "collection0")}と{change("bilinear", "jbu", "collection100")}である。全画素に色の補正をかけると、MAEは立ち絵1で{f2(values[("jbu_lut", "sprite1")][1])}、17体の転写0%で{f2(values[("jbu_lut", "collection0")][1])}と、補正をかけない場合の{f2(values[("jbu", "sprite1")][1])}と{f2(values[("jbu", "collection0")][1])}より大きくなる。補正の対象を境界付近の帯に限ると、MAEは立ち絵1で{f2(values[("jbu_lutband", "sprite1")][1])}、17体の転写0%で{f2(values[("jbu_lutband", "collection0")][1])}と、補正をかけない場合と同程度になる。ガイデッドフィルタを加えたときのIoUの変化は、立ち絵1で{change("jbu_lutband", "final", "sprite1", 0, 3)}、立ち絵2で{change("jbu_lutband", "final", "sprite2", 0, 3)}、17体の転写0%と100%で{change("jbu_lutband", "final", "collection0", 0, 3)}と{change("jbu_lutband", "final", "collection100", 0, 3)}である。</p>"""
     return text + "\n" + table
 
 
@@ -493,9 +493,9 @@ def models_section(study: Study) -> str:
             )
     table = table_html(
         "t:models",
-        "楕円の誤差モデルを変えたときの前景のIoU / MAE（縁の仕上げ後）。誤差モデルMの値は主な結果と同じ試行である。",
+        "楕円の誤差モデルを変えたときの前景のIoU / MAE（精緻化後）。誤差モデルMの値は主な結果と同じ試行である。",
         [
-            "集合",
+            "データセット",
             "誤差<br>モデル",
             "楕円を<br>そのまま",
             "事前分布<br>のみ",
@@ -509,7 +509,7 @@ def models_section(study: Study) -> str:
     gain = {cell: iou[cell]["tex"][0] - iou[cell]["prior"][0] for cell in iou}
     ordered = [cell for cell in iou if iou[cell]["tex"][0] > iou[cell]["prior"][0] > iou[cell]["ellipse"][0]]
     exceptions = [cell for cell in iou if cell not in ordered]
-    scope = "立ち絵1、立ち絵2、17体の四つの集合と四つの誤差モデル"
+    scope = "立ち絵1、立ち絵2、17体の四つのデータセットと四つの誤差モデル"
     sequence = "テクスチャのみ、事前分布のみ、楕円をそのまま使う場合の順にIoUが高い。"
     if not exceptions:
         order = f"{scope}のすべてで、{sequence}"

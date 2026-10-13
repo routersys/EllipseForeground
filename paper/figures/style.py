@@ -24,10 +24,10 @@ NAMES = {
     "prior": "事前分布のみ",
     "tex": "テクスチャのみ",
     "app": "色とパッチのみ",
-    "mix": "固定配合",
+    "mix": "固定重み",
     "adaptive_c": "適応（色）",
     "adaptive": "適応（色とパッチ）",
-    "oracle": "正解の事前分布",
+    "oracle": "正解スコア",
 }
 PATCH_COLOR = "#a16207"
 

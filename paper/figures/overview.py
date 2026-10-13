@@ -69,10 +69,10 @@ def overview_figure(directory: Path, data_root: Path) -> None:
     height, width = analysis.shape
     panels = [
         (analysis.work, "(a) 入力画像と指定した楕円", "image"),
-        (mosaic, "(b) 単連結階層木（高さで切った区画）", "image"),
+        (mosaic, "(b) 単連結法のデンドログラム（高さで切った領域）", "image"),
         (scores, "(c) 画素ごとの手がかりの和 u", "heat"),
-        (mask.astype(np.float32), "(d) 木の上の最適切断", "mask"),
-        (alpha, "(e) 縁の仕上げ後のα", "mask"),
+        (mask.astype(np.float32), "(d) 木の上の最適な切断", "mask"),
+        (alpha, "(e) 精緻化後のα", "mask"),
         (rendered, "(f) ぼかし描画", "image"),
     ]
     figure, axes = plt.subplots(2, 3, figsize=(7.4, 3.35))
