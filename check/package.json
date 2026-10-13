@@ -1,0 +1,13 @@
+{
+  "name": "ellipseforeground-site-check",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node serve.mjs",
+    "check": "node check.mjs",
+    "browser": "node browser.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.12.0"
+  }
+}
