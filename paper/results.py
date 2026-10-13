@@ -84,6 +84,10 @@ class Results:
         subset = SUBSETS[key]
         return self._select("models", f"{subset.group}-{model}", subset)
 
+    def baselines(self, key: str) -> list[dict]:
+        subset = SUBSETS[key]
+        return self._select("baselines", subset.group, subset)
+
     def resolution_trials(self, key: str, width: int) -> list[dict]:
         subset = SUBSETS[key]
         return self._select("resolution", f"{subset.group}-{width}", subset)
@@ -152,6 +156,20 @@ class Measure:
             records, lambda record: record[second_family][second][measure]
         )
         return bootstrap_interval(difference)
+
+    def baseline_mean(self, key: str, name: str, measure: str = "iou") -> float:
+        return scene_mean(self.results.baselines(key), lambda record: record[name][measure])
+
+    def baseline_interval(self, key: str, name: str, measure: str = "iou", method: str = "adaptive_c") -> Interval:
+        proposed = {(record["scene"], record["trial"]): record for record in self.results.trials(key)}
+        rows = [
+            {
+                "scene": record["scene"],
+                "value": record[name][measure] - proposed[(record["scene"], record["trial"])][TREE][method][measure],
+            }
+            for record in self.results.baselines(key)
+        ]
+        return bootstrap_interval(scene_means(rows, lambda row: row["value"]))
 
     def difference(self, key: str, first: str, second: str, measure: str = "iou", **families: str) -> float:
         return self.interval(key, first, second, measure, **families).mean

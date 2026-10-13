@@ -98,6 +98,22 @@ def write_results(directory: Path, seed: int = 0) -> None:
     rng = np.random.default_rng(seed)
     photos = [comparison_record("photo", scene, trial, rng) for scene in range(DEFAULT_SCENES) for trial in range(2)]
     append_records(directory / "comparison" / "photo.jsonl", photos)
+    for group in ("public0", "public100", "photo"):
+        scenes = DEFAULT_SCENES
+        records = [
+            {
+                "scene": scene,
+                "name": f"{group}-{scene}",
+                "trial": trial,
+                **{
+                    name: score(0.7 + shift, rng)
+                    for name, shift in (("grabcut", 0.0), ("sam_single", 0.05), ("sam_best", 0.04))
+                },
+            }
+            for scene in range(scenes)
+            for trial in range(DEFAULT_TRIALS)
+        ]
+        append_records(directory / "baselines" / f"{group}.jsonl", records)
     for key in SETS:
         group = SUBSETS[key].group
         scenes = SCENE_COUNT.get(group, DEFAULT_SCENES)

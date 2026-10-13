@@ -17,6 +17,7 @@ from paper.results import (
     PUBLIC_SETS,
     SUBSETS,
 )
+from paper.sections.baselines import baseline_section
 from paper.sections.labels import METHOD_HEADERS, METHOD_LABELS
 from paper.sections.photos import photo_section
 from paper.study import Study
@@ -244,6 +245,7 @@ def main_section(study: Study) -> str:
         + "\n"
         + public_table(study)
         + photo_section(study)
+        + baseline_section(study)
         + '\n<h3 id="s:dose">色転写の量と手がかり</h3>\n'
         + dose_results(study)
         + '\n<figure id="f:dose"><img src="figs/fig_dose.svg" alt="色転写の量と手がかり" style="width:100%"><figcaption><span class="no">図</span>色転写の量に対する、(a)内側と外側の分布のバタチャリヤ係数、(b)手がかりの識別性能（楕円内のAUC）と色の重み、(c)前景のIoU（立ち絵1、星雲、各8試行）。</figcaption></figure>\n'
