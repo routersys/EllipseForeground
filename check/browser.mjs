@@ -56,8 +56,8 @@ async function wait(page, predicate, argument, timeout = 40000) {
 const rendered = () => document.querySelectorAll("#viewer canvas").length > 0 && document.querySelectorAll("#viewer .textLayer span").length > 0;
 
 for (const [language, path, searchTerm] of [
-  ["en", "paper/", "階層木"],
-  ["ja", "ja/paper/", "階層木"],
+  ["en", "paper/", "デンドログラム"],
+  ["ja", "ja/paper/", "デンドログラム"],
 ]) {
   const { page, errors } = await open(base + path);
   await wait(page, rendered);
