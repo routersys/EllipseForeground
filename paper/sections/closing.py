@@ -1,4 +1,5 @@
-from paper.numbers import above_zero, below_zero, ceil3, f2, f3, signed
+from ellipse_foreground.evaluation.sprites import SCENES_PER_SPRITE
+from paper.numbers import above_zero, below_zero, ceil3, f2, f3, interval_text, separates_from_zero, signed
 from paper.quantities import (
     GraphCutComparison,
     graph_cut_comparison,
@@ -8,10 +9,11 @@ from paper.quantities import (
 )
 from paper.results import EARLIER_SETS, SETS, SUBSETS
 from paper.sections.ablation import largest_drop_form
-from paper.study import Study
+from paper.study import Study, Timing
 
 SET_LABELS = {key: SUBSETS[key].short for key in SETS}
 HELD_OUT_SETS = ("sprite2", "public0", "public100")
+SPRITE_SETS = ("collection0", "collection100", "public0", "public100")
 
 
 def join(keys: list[str]) -> str:
@@ -44,13 +46,20 @@ def graph_cut_abstract(comparison: GraphCutComparison) -> str:
     return f"画素単位のグラフカットは、{head}木の切断よりIoUが{range_text(positive_values)}高く（信頼区間が0を含まないのは{significant_text}）、{tail}"
 
 
+def speed_ratios(timing: Timing) -> str:
+    dinic = f"Dinic法による最小カットの約{timing.ratio:.0f}分の1"
+    if timing.boykov_kolmogorov_ratio is None:
+        return dinic
+    return f"{dinic}、BoykovとKolmogorovのアルゴリズムの約{timing.boykov_kolmogorov_ratio:.1f}分の1"
+
+
 def abstract(study: Study) -> str:
     summary = headline(study.measure)
     comparison = graph_cut_comparison(study.measure)
     ratio = ""
     if study.timing:
         ratio = (
-            f"。同じスコアのもとでの最適化1回の計算時間は、木の動的計画法のほうが約{study.timing.ratio:.0f}分の1である"
+            f"。同じスコアのもとでの最適化1回の計算時間は、木の動的計画法のほうが、{speed_ratios(study.timing)}である"
         )
     return (
         "被写体を楕円で大まかに指定したときに、画像からその前景のアルファマットを推定する方法を述べる。画像から単連結法でデンドログラムを作り、楕円に由来する事前分布、画素ごとの手がかり、境界項の和を最大にする切断を、動的計画法で厳密に求める。"
@@ -64,6 +73,18 @@ def abstract(study: Study) -> str:
     )
 
 
+def sprite_level_sentence(study: Study) -> str:
+    lost = []
+    for key in SPRITE_SETS:
+        scene = study.interval(key, "adaptive_c", "adaptive_c", first_family="graph")
+        sprite = study.measure.sprite_interval(key, "adaptive_c", "adaptive_c", first_family="graph")
+        if separates_from_zero(scene) and not separates_from_zero(sprite):
+            lost.append(f"{SET_LABELS[key]}で{interval_text(sprite)}")
+    if not lost:
+        return "グラフカットと木の切断のIoUの差は、立ち絵を単位に再標本化しても、場面を単位にした区間が0を含まないデータセットでは0を含まない。"
+    return f"グラフカットと木の切断のIoUの差について、立ち絵を単位に再標本化すると、{'、'.join(lost)}となり、区間は0を含む。"
+
+
 def graph_cut_discussion(study: Study, comparison: GraphCutComparison) -> str:
     diffs = "、".join(f"{SET_LABELS[key]}で{signed(comparison.difference[key])}" for key in SETS)
     higher = join(comparison.higher) or "なし"
@@ -75,7 +96,9 @@ def graph_cut_discussion(study: Study, comparison: GraphCutComparison) -> str:
     )
     speed = ""
     if study.timing:
-        speed = f'最適化1回の計算時間は、木の動的計画法がグラフカットの約{study.timing.ratio:.0f}分の1である（<ref k="s:abl_gc"></ref>）。'
+        speed = (
+            f'最適化1回の計算時間は、木の動的計画法が{speed_ratios(study.timing)}である（<ref k="s:abl_gc"></ref>）。'
+        )
     constraint = (
         "木の切断は、画像のデンドログラムに含まれる領域しか表現できず、細い連結で背景とつながる細部を分けられないことがある。"
         "この制約が、グラフカットが高くなるデータセットの一因と考えられる。"
@@ -145,13 +168,15 @@ def discussion(study: Study) -> str:
         "この関係を境界付近の画素の識別性能と対応づける方法は、本稿では示せていない。</p>\n"
         + graph_cut_discussion(study, comparison)
         + '<h3 id="s:disc_threat">妥当性への脅威</h3>\n'
-        "<p><b>合成による評価。</b>評価に使った画像は、立ち絵と背景を合成したものである。前景と背景は別の出自を持つため、実際の写真に比べて絵柄の違いが大きく、外観の手がかりに有利に働くと考えられる。写真の人物や、前景と背景が連続する画像での結果は本稿では示していない。</p>\n"
+        "<p><b>合成による評価。</b>評価に使った画像は、立ち絵と背景を合成したものである。前景と背景は別の出自を持つため、実際の写真に比べて絵柄の違いが大きく、外観の手がかりに有利に働くと考えられる。写真の人物や、前景と背景が連続する画像での結果は本稿では示していない。また、元の解像度の平坦さの手がかりは、一様な塗りの前景を前提にしており、撮像のノイズを持つ前景に対して働くかどうかは確かめていない。</p>\n"
+        '<p><b>評価指標。</b>IoUは、0.5で二値化した前景の形の一致を測る。MAEは、ぼかし描画への視覚的な影響を測る。どちらも、髪や半透明の部分のアルファの中間値の精度を直接には測らない。マッティングの評価で使われるSADなどの誤差尺度<cite k="rhemann2009"></cite>は報告していない。</p>\n'
+        f"<p><b>信頼区間の単位。</b>信頼区間は、場面を単位とする復元抽出で求めた。17体と公開素材では、同じ立ち絵から{SCENES_PER_SPRITE}場面を作っており、それらは互いに似ているため、区間が狭くなっている可能性がある。立ち絵1と立ち絵2はキャラクターが1体なので、立ち絵を単位にした区間は求められない。{sprite_level_sentence(study)}</p>\n"
         "<p><b>開発用のデータセットと定数の選択。</b>立ち絵1と17体は、手法の設計と定数の選択に使った。選択した定数のうち、境界項の倍率とグラフカットの \\(\\lambda\\) は、最適値がデータセットにより大きく異なる。既定の事前分布の内側の縮小率も、最適値がデータセットにより異なる。"
         f"{held_out_text}立ち絵2は立ち絵1と同じキャラクターの髪型違いで、絵柄が共通するため、立ち絵1に対する独立性は低い。背景も8種にすぎない。公開素材の立ち絵17枚のうち12枚は同じ作者の7セットで、絵柄が近い。結果の一般性は限られる。17体のデータセットは、本稿の実験の前に行った探索でも使っており、その影響を完全には切り離せない。</p>\n"
-        '<p><b>楕円の誤差モデル。</b>利用者の楕円の誤差は、倍率と中心のずれを一様乱数で引く模擬である。実際の操作で生じる誤差の分布とは異なる可能性がある。誤差モデルを変えた結果は<ref k="s:abl_noise"></ref>に示したが、実際の利用者の操作は評価していない。</p>\n'
+        '<p><b>楕円の誤差モデル。</b>利用者の楕円の誤差は、正解の外接矩形から作った楕円に、倍率と中心のずれを一様乱数で加える模擬である。実際の操作で生じる誤差の分布や、系統的な偏りとは異なる可能性がある。事前分布の内側の縮小率は、誤差モデルMでの楕円の内側の割合に依存する（<ref k="s:abl_prior"></ref>）。誤差モデルを変えた結果は<ref k="s:abl_noise"></ref>に示したが、実際の利用者の操作は評価していない。</p>\n'
         "<p><b>描画の簡略化。</b>ぼかし描画は、円板の点拡がり関数による均一なぼかしである。深度に応じた変化や、明るい光源の広がりは扱っておらず、MAEはこの描画に対する値である。</p>\n"
-        '<p><b>学習済みモデルとの比較。</b>本稿は学習を使わない手法の性質を調べるもので、学習済みの分割モデル<cite k="kirillov2023"></cite>との比較は行っていない。これらのモデルは、本稿の手法より高い精度を出す可能性がある。</p>\n'
-        '<p><b>計算時間の測定範囲。</b>計算時間は、動的計画法と最小カットの1回あたりの時間だけを測った。楕円を動かすたびに必要な手がかりの再計算は測っておらず、特にパッチの最近傍探索は計算量が他の段より大きい（<ref k="s:cost"></ref>）。</p>\n'
+        '<p><b>外部の手法との比較。</b>本稿の比較は、構成どうしと、同じスコアを使う画素単位のグラフカットに限られる。GrabCutなどの既存の手法とは比較していない。学習済みの分割モデル<cite k="kirillov2023"></cite>とも比較しておらず、これらのモデルは、本稿の手法より高い精度を出す可能性がある。</p>\n'
+        '<p><b>計算時間の測定範囲。</b>計算時間は、動的計画法と最小カットの1回あたりの時間だけを測った。楕円を動かすたびに必要な手がかりの再計算は測っておらず、特にパッチの最近傍探索は計算量が他の段より大きい（<ref k="s:cost"></ref>）。最適化の速さの差が、手がかりの再計算を含む更新全体の時間にどれだけ影響するかは、本稿では示していない。</p>\n'
         '<h3 id="s:disc_future">今後の課題</h3>\n'
         "<p>三つの課題が残る。第一は、写真の人物を含む画像での評価である。第二は、手がかりの信頼度を、境界付近の画素の識別性能と対応づける方法である。そのためには、楕円の内側と外側の標本のうち、境界に近い画素だけを使う方法や、手がかり間の一致を使う方法が考えられる。"
         "第三は、木の切断とグラフカットの併用である。木の切断の結果を初期値として、境界付近の帯の中だけを画素単位で再判定すれば、計算時間を抑えながら、細部の精度を上げられる可能性がある。</p>\n"
@@ -175,7 +200,7 @@ def conclusion(study: Study) -> str:
     return (
         '<h2 id="s:concl">おわりに</h2>\n'
         "<p>楕円で大まかに指定された前景を、単連結法のデンドログラムの上の最適な切断として推定する方法を述べ、手がかり、境界項、最適化のそれぞれの効果を、六つの画像データセットで評価した。</p>\n"
-        f"<p>デンドログラムの上の切断により、楕円をそのまま使う場合のIoU {f2(summary.ellipse_low)}〜{f2(summary.ellipse_high)} を、適応（色）の構成で {f2(summary.adaptive_low)}〜{f2(summary.adaptive_high)} に上げた。元の解像度の平坦さを使うテクスチャの手がかりは、色転写で色とパッチの手がかりの識別性能が下がる合成画像で有効であり、立ち絵1の全12条件でIoUが{f3(study.mean('sprite1', 'tex'))}になった。"
+        f"<p>デンドログラムの上の切断により、楕円をそのまま使う場合のIoUを、{f2(summary.ellipse_low)}〜{f2(summary.ellipse_high)}から、適応（色）の構成で{f2(summary.adaptive_low)}〜{f2(summary.adaptive_high)}に上げた。元の解像度の平坦さを使うテクスチャの手がかりは、色転写で色とパッチの手がかりの識別性能が下がる合成画像で有効であり、立ち絵1の全12条件でIoUが{f3(study.mean('sprite1', 'tex'))}になった。"
         f"一方、17体の転写0%では、色とパッチのみがテクスチャのみを上回る。両者の優劣はデータセットにより異なるが、併用する固定重みは、設計に使っていないデータセットを含むすべてのデータセットで、最良との差を{ceil3(summary.mix_regret)}以内に抑えた。</p>\n"
         f"<p>楕円の内側と外側の分布のバタチャリヤ係数は、テクスチャと色の識別性能と対応した（順位相関 {signed(correlations['texture'].pooled, 2)}、{signed(correlations['color'].pooled, 2)}）。しかし、係数に基づく色の重みの調整が固定重みに与える効果は、IoUで最大{f3(summary.adaptive_effect)}と小さかった。"
         f"境界項の形は、強さを調整すれば精度が同程度になり、{largest_drop_form(study)}は倍率を大きくしたときの低下が最も大きかった。{graph_text}</p>\n"
