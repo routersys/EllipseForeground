@@ -1,0 +1,20 @@
+#toolbar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:.4em .8em;align-items:center;padding:.4em 0;background:Canvas;border-bottom:1px solid GrayText}
+#toolbar input[type=number]{width:4em}
+#toolbar input[type=search]{width:12em;max-width:100%}
+#find{display:flex;flex-wrap:wrap;gap:.4em;align-items:center;margin:0}
+#hits{max-height:12em;overflow:auto;margin:.4em 0;padding-left:2em}
+#hits button{font:inherit;text-align:left;background:none;border:0;padding:0;color:LinkText;text-decoration:underline;cursor:pointer}
+#viewer{margin:.5em 0;overflow-x:auto}
+.page{position:relative;margin:.5em auto;background:#fff;box-shadow:0 0 0 1px GrayText}
+.page canvas{display:block;width:100%;height:100%}
+.page .label{position:absolute;right:.4em;bottom:.2em;font-size:.75em;color:GrayText}
+.textLayer{color-scheme:only light;position:absolute;text-align:initial;inset:0;overflow:clip;opacity:1;line-height:1;letter-spacing:normal;word-spacing:normal;text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0;caret-color:CanvasText;z-index:0;--min-font-size:1;--text-scale-factor:calc(var(--total-scale-factor) * var(--min-font-size));--min-font-size-inv:calc(1 / var(--min-font-size))}
+.textLayer :is(span,br){color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;user-select:text}
+.textLayer>:not(.markedContent),.textLayer .markedContent span:not(.markedContent){z-index:1;--font-height:0;font-size:calc(var(--text-scale-factor) * var(--font-height));--scale-x:1;--rotate:0deg;transform:rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv))}
+.textLayer .markedContent{display:contents}
+.textLayer span[role=img]{user-select:none;cursor:default}
+.textLayer ::selection{background:color-mix(in srgb,AccentColor,transparent 50%);color:transparent}
+.textLayer br::selection{background:transparent}
+.textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:0;cursor:default;user-select:none}
+.textLayer.selecting .endOfContent{top:0}
+.page{scroll-margin-top:4.5em}
