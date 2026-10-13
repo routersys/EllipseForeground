@@ -176,6 +176,15 @@ python -m ellipse_foreground.evaluation sprite1
 
 公開素材の1データセットは、Intel Core i7-1360Pでほかの評価を並行して実行したときに、約3.5時間かかりました。
 
+GrabCutとSAM（ViT-B）を比較の基準にする評価は、依存を入れてから別のコマンドで実行します。入力は、評価の楕円の外接矩形です。
+
+```console
+pip install -e ".[baselines]"
+python -m ellipse_foreground.evaluation.baselines public0 --checkpoint downloads/sam/sam_vit_b_01ec64.pth
+```
+
+重みは、Metaが配布する`sam_vit_b_01ec64.pth`（約375MB）を利用者が取得します。リポジトリには含めません。`--checkpoint`を省くとGrabCutだけを実行します。`photo`には`--photos`が必要です。結果は`results/baselines`に書かれます。
+
 ### 3. 基準値と照合する
 
 `harness`は、論文の場面から選んだ画像で各段の出力を作り、出力のハッシュを`harness/golden.json`の基準値と比べます。コードを変えても出力が変わっていないことを確かめるために使います。ゴールデンファイルテストと呼ばれる手法です。
