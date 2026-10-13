@@ -6,7 +6,14 @@ import pytest
 
 from ellipse_foreground import Analysis
 from ellipse_foreground.settings import Settings, WorkSettings
-from paper.timing import build_instance, build_solver, pixel_range, run_solver
+from paper.timing import (
+    build_instance,
+    build_solver,
+    pixel_range,
+    read_graph_cut_input,
+    run_boykov_kolmogorov,
+    run_solver,
+)
 from tests.helpers import noisy_scene
 
 PROBLEMS = 3
@@ -52,6 +59,15 @@ def test_reference_labels_have_one_row_per_problem(instance_inputs):
     assert instance.graph_cut_labels.shape == instance.tree_labels.shape
 
 
+def test_graph_cut_input_is_read_back(instance_inputs):
+    analysis, instance = instance_inputs
+    height, width = analysis.shape
+    read_width, read_height, weights, unaries = read_graph_cut_input(instance.graph_cut_input)
+    assert (read_width, read_height) == (width, height)
+    assert weights.shape == (height * (width - 1) + (height - 1) * width,)
+    assert unaries.shape == (PROBLEMS, height * width)
+
+
 def test_pixel_range_collapses_equal_values():
     assert pixel_range([32768, 36864]) == "3.3万〜3.7万"
     assert pixel_range([32768, 32768]) == "3.3万"
@@ -64,3 +80,11 @@ def test_compiled_solvers_agree_with_the_reference_implementation(instance_input
     _, graph_agreement = run_solver(build_solver("GraphCut"), instance.graph_cut_input, instance.graph_cut_labels, 1)
     assert tree_agreement == 1.0
     assert graph_agreement > 0.99
+
+
+def test_boykov_kolmogorov_agrees_with_the_reference_implementation(instance_inputs):
+    library = pytest.importorskip("maxflow")
+    _, instance = instance_inputs
+    milliseconds, agreement = run_boykov_kolmogorov(library, instance.graph_cut_input, instance.graph_cut_labels, 2)
+    assert len(milliseconds) == 2
+    assert agreement > 0.99

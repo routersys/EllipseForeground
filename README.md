@@ -215,6 +215,8 @@ python -m paper timing
 
 5場面の得点を、木の動的計画法と、画素グラフの最小カット（Dinic法）で解いたときの、1回あたりの時間が`results/timing.json`に書かれます。どちらもC#で書いた`paper/solvers`のプログラムで、単一スレッドです。実行の最初に、`dotnet build`で2つのプログラムを作ります。測るのは、木とグラフの構築と最初の実行を除いた、2回目の実行の時間です。ほかの重い処理は止めてから実行してください。
 
+PyMaxflowを入れてある場合（`pip install -e ".[timing]"`）は、同じ問題をBoykovとKolmogorovのアルゴリズムでも解き、`maxflow`の呼び出しだけの時間を`results/timing.json`に加えます。グラフの構築は測りません。PyMaxflowはGPLで配布されているため、依存には含めず、入れたときだけ使います。
+
 ---
 
 ## リポジトリの構成

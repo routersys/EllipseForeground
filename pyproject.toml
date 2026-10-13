@@ -13,6 +13,7 @@ dependencies = ["numpy>=2.0", "Pillow>=10.0", "scipy>=1.11"]
 
 [project.optional-dependencies]
 figures = ["matplotlib>=3.8"]
+timing = ["PyMaxflow>=1.3"]
 dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [tool.setuptools.packages.find]

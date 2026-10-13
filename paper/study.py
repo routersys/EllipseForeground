@@ -15,10 +15,16 @@ class Timing:
     environment: str
     instances: int
     problems: int
+    boykov_kolmogorov_ms: float | None = None
+    boykov_kolmogorov_library: str | None = None
 
     @property
     def ratio(self) -> float:
         return self.graph_cut_ms / self.tree_ms
+
+    @property
+    def boykov_kolmogorov_ratio(self) -> float | None:
+        return None if self.boykov_kolmogorov_ms is None else self.boykov_kolmogorov_ms / self.tree_ms
 
     @staticmethod
     def read(path: Path) -> "Timing | None":
@@ -32,6 +38,8 @@ class Timing:
             data["environment"],
             data["instances"],
             data["problems"],
+            data.get("boykov_kolmogorov_ms"),
+            data.get("boykov_kolmogorov_library"),
         )
 
 

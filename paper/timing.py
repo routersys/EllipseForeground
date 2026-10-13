@@ -1,9 +1,11 @@
+import importlib.metadata
 import json
 import platform
 import re
 import statistics
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -98,6 +100,52 @@ def run_solver(
     return milliseconds, float((produced == expected_labels).mean())
 
 
+def read_graph_cut_input(payload: bytes) -> tuple[int, int, np.ndarray, np.ndarray]:
+    width, height, count = np.frombuffer(payload[:12], dtype=np.int32).tolist()
+    body = np.frombuffer(payload, dtype=np.float32, offset=12)
+    edges = height * (width - 1) + (height - 1) * width
+    return (
+        width,
+        height,
+        body[:edges].astype(np.float64),
+        body[edges:].reshape(count, height * width).astype(np.float64),
+    )
+
+
+def maxflow_library():
+    try:
+        import maxflow
+    except ImportError:
+        return None
+    return maxflow
+
+
+def run_boykov_kolmogorov(
+    library, payload: bytes, expected_labels: np.ndarray, repetitions: int
+) -> tuple[list[float], float]:
+    width, height, weights, unaries = read_graph_cut_input(payload)
+    first, second = grid_edges((height, width))
+    problems = len(unaries)
+    produced = np.zeros(expected_labels.shape, dtype=np.uint8)
+    milliseconds = []
+    for repetition in range(repetitions + 1):
+        elapsed = 0.0
+        for problem, unary in enumerate(unaries):
+            graph = library.Graph[float](width * height, len(weights))
+            nodes = graph.add_grid_nodes((height, width))
+            graph.add_edges(first, second, weights, weights)
+            graph.add_grid_tedges(
+                nodes, np.maximum(unary, 0.0).reshape(height, width), np.maximum(-unary, 0.0).reshape(height, width)
+            )
+            start = time.perf_counter()
+            graph.maxflow()
+            elapsed += time.perf_counter() - start
+            produced[problem] = ~graph.get_grid_segments(nodes).ravel()
+        if repetition > 0:
+            milliseconds.append(elapsed * 1000.0 / problems)
+    return milliseconds, float((produced == expected_labels).mean())
+
+
 def processor_name() -> str:
     if platform.system() == "Windows":
         query = "(Get-CimInstance Win32_Processor | Select-Object -First 1 | ForEach-Object { $_.Name + '|' + $_.NumberOfCores })"
@@ -123,6 +171,9 @@ def measure(data_root: Path, output: Path) -> dict:
     tree_library, graph_library = build_solver("TreeDp"), build_solver("GraphCut")
     tree_samples: list[float] = []
     graph_samples: list[float] = []
+    flow_samples: list[float] = []
+    flow_agreement: list[float] = []
+    flow_library = maxflow_library()
     tree_agreement: list[float] = []
     graph_agreement: list[float] = []
     counts = []
@@ -139,6 +190,12 @@ def measure(data_root: Path, output: Path) -> dict:
         )
         graph_samples += samples
         graph_agreement.append(agreement)
+        if flow_library:
+            samples, agreement = run_boykov_kolmogorov(
+                flow_library, instance.graph_cut_input, instance.graph_cut_labels, GRAPH_CUT_REPETITIONS
+            )
+            flow_samples += samples
+            flow_agreement.append(agreement)
     summary = {
         "tree_ms": statistics.median(tree_samples),
         "graph_cut_ms": statistics.median(graph_samples),
@@ -151,6 +208,13 @@ def measure(data_root: Path, output: Path) -> dict:
         "tree_samples": tree_samples,
         "graph_cut_samples": graph_samples,
     }
+    if flow_library:
+        summary |= {
+            "boykov_kolmogorov_ms": statistics.median(flow_samples),
+            "boykov_kolmogorov_agreement": min(flow_agreement),
+            "boykov_kolmogorov_library": f"PyMaxflow {importlib.metadata.version('PyMaxflow')}",
+            "boykov_kolmogorov_samples": flow_samples,
+        }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return summary
