@@ -6,7 +6,7 @@
 <p>を定める。\(\rho<1\) が楕円の内側である。出力は前景のアルファマット \(\hat\alpha:\Omega\to[0,1]\) である。</p>
 
 <h3 id="s:render">描画と評価指標</h3>
-<p>推定したアルファマットは、背景のぼかし描画に使う。前景の画素は \(I\) のまま残し、背景の画素だけを半径 \(R\) の円板でぼかす。ぼかしに前景の色が混ざらないよう、正規化畳み込み<cite k="knutsson1993"></cite>を使う。円板の核を \(G_R\)、畳み込みを \(*\) で表すと、描画は</p>
+<p>推定したアルファマットは、背景のぼかし描画に使う。前景の画素は \(I\) のまま残し、背景の画素だけを半径 \(R\) の円板でぼかす。ぼかしに前景の色が混ざらないよう、正規化畳み込み（normalized convolution）<cite k="knutsson1993"></cite>を使う。円板の核を \(G_R\)、畳み込みを \(*\) で表すと、描画は</p>
 <div class="eq" id="e:render"><span class="math">\[ \mathcal R(I,\alpha)=\alpha\,I+(1-\alpha)\,\frac{G_R*\bigl((1-\alpha)I\bigr)}{\max\bigl(G_R*(1-\alpha),\,\varepsilon\bigr)} \]</span></div>
 <p>である。右辺の第2項は、背景の画素だけを重みとして平均した色になる。ここで \(\varepsilon=10^{-4}\) とする。ぼかしによる光学的な効果は円板の点拡がり関数で近似しており、深度に応じた変化や、明るい光源の広がりは扱わない。</p>
 <p>評価には二つの指標を使う。一つは前景のIoU（intersection over union）で、\(\hat\alpha\) と正解 \(\alpha^\ast\) をそれぞれ0.5で二値化した集合の、共通部分と和集合の面積比である<cite k="everingham2010"></cite>。もう一つは、推定したアルファマットによる描画 \(\mathcal R(I,\hat\alpha)\) と、正解による描画 \(\mathcal R(I,\alpha^\ast)\) の平均絶対誤差（MAE）である。</p>

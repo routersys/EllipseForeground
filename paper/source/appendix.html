@@ -11,21 +11,21 @@
 <tr class="sep"><td class="l" rowspan="2">標本</td><td class="l">中心側 \(\mathcal K\)</td><td>\(\rho<0.5\)</td><td>既定</td></tr>
 <tr><td class="l">外側 \(\mathcal B\)</td><td>\(\rho>1.3\)</td><td>既定</td></tr>
 <tr class="sep"><td class="l" rowspan="4">境界項</td><td class="l">係数 \(\lambda_0\)</td><td>14/3</td><td>既定</td></tr>
-<tr><td class="l">弱さの \(\sigma\)</td><td>0.05、0.1の平均</td><td>既定</td></tr>
+<tr><td class="l">類似度の \(\sigma\)</td><td>0.05、0.1の平均</td><td>既定</td></tr>
 <tr><td class="l">強さの倍率 \(m\)</td><td><<V:m_tree>></td><td>選択</td></tr>
 <tr><td class="l">解像度の補正</td><td>\(L/128\)</td><td>既定</td></tr>
 <tr class="sep"><td class="l" rowspan="2">手がかり（共通）</td><td class="l">対数尤度比の打ち切り</td><td>±2（\(\ln\) 単位）、2で割る</td><td>既定</td></tr>
 <tr><td class="l">スコアの範囲</td><td>\([-1,1]\)</td><td>既定</td></tr>
 <tr class="sep"><td class="l" rowspan="2">色</td><td class="l">ヒストグラム</td><td>8×8×8、3×3×3で平滑化、\(10^{-5}\)</td><td>既定</td></tr>
-<tr><td class="l">配合の重み（固定重み）</td><td>0.25</td><td>選択</td></tr>
+<tr><td class="l">固定重みの値</td><td>0.25</td><td>選択</td></tr>
 <tr class="sep"><td class="l" rowspan="5">パッチ</td><td class="l">窓</td><td>3×3（27次元）</td><td>既定</td></tr>
 <tr><td class="l">標本数</td><td>中心側3000以下、外側は中心側の8倍以下（下限20）</td><td>既定</td></tr>
 <tr><td class="l">除外する範囲</td><td>\(\lVert p-q\rVert_\infty\le2\)</td><td>既定</td></tr>
 <tr><td class="l">係数 \(\kappa_{\mathrm{pat}}\)</td><td>4</td><td>既定</td></tr>
-<tr><td class="l">配合の重み</td><td>0.3</td><td>選択</td></tr>
+<tr><td class="l">固定重みの値</td><td>0.3</td><td>選択</td></tr>
 <tr class="sep"><td class="l" rowspan="3">テクスチャ</td><td class="l">平坦の閾値</td><td>\(m(p)\le2\)</td><td>既定</td></tr>
 <tr><td class="l">差の上限、平滑化</td><td>32、3×3の平均</td><td>既定</td></tr>
-<tr><td class="l">ヒストグラム、配合の重み</td><td>6×6、1.0</td><td>既定</td></tr>
+<tr><td class="l">ヒストグラム、固定重みの値</td><td>6×6、1.0</td><td>既定</td></tr>
 <tr class="sep"><td class="l">信頼度に基づく重み</td><td class="l">基準の重みと式</td><td>0.5、\(\max(0,1-\mathrm{BC}_{\mathrm{col}}/\mathrm{BC}_{\mathrm{tex}})\)</td><td>既定</td></tr>
 <tr class="sep"><td class="l" rowspan="3">精緻化</td><td class="l">\(\sigma_r\)</td><td>0.12</td><td>既定</td></tr>
 <tr><td class="l">色の補正</td><td>32段階、打ち切り±6、係数6と3</td><td>既定</td></tr>
