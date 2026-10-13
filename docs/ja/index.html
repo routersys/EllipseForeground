@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>EllipseForeground: 大まかな楕円から前景のアルファマットを求めるPythonライブラリ</title>
+<meta name="description" content="大まかな楕円から、画像の前景のアルファマットを求めるPythonのライブラリです。論文の参照実装で、評価のコードも収録しています。単連結法の木の上の最適な切断を厳密に求め、学習済みのモデルは使いません。">
+<link rel="canonical" href="https://lib.routersys.com/EllipseForeground/ja/">
+<link rel="alternate" hreflang="en" href="https://lib.routersys.com/EllipseForeground/">
+<link rel="alternate" hreflang="ja" href="https://lib.routersys.com/EllipseForeground/ja/">
+<link rel="alternate" hreflang="x-default" href="https://lib.routersys.com/EllipseForeground/">
+<link rel="icon" href="../icon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EllipseForeground">
+<meta property="og:title" content="EllipseForeground: 大まかな楕円から前景のアルファマットを求めるPythonライブラリ">
+<meta property="og:description" content="大まかな楕円から、画像の前景のアルファマットを求めるPythonのライブラリです。論文の参照実装で、評価のコードも収録しています。単連結法の木の上の最適な切断を厳密に求め、学習済みのモデルは使いません。">
+<meta property="og:url" content="https://lib.routersys.com/EllipseForeground/ja/">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:locale:alternate" content="en_US">
+<style>body{max-width:44em;margin:1em auto;padding:0 1em;line-height:1.5}pre{overflow-x:auto}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"EllipseForeground","description":"大まかな楕円から、画像の前景のアルファマットを求めるPythonのライブラリです。論文の参照実装で、評価のコードも収録しています。単連結法の木の上の最適な切断を厳密に求め、学習済みのモデルは使いません。","programmingLanguage":"Python","runtimePlatform":"Python 3.11以降","license":"https://opensource.org/license/bsd-3-clause","codeRepository":"https://github.com/routersys/EllipseForeground","url":"https://lib.routersys.com/EllipseForeground/ja/","inLanguage":"ja"}</script>
+</head>
+<body>
+<header>
+<h1>EllipseForeground</h1>
+<p>EllipseForegroundは、大まかな楕円から、画像の前景のアルファマットを求めるライブラリです。<br>論文の参照実装で、学習済みのモデルも追加の注釈も使わず、入力は画像と楕円だけです。</p>
+<p><a href="paper/">論文をブラウザーで読めます</a>。PDFは外部へ送りません。</p>
+<nav>
+<a href="https://github.com/routersys/EllipseForeground">GitHub</a> |
+<a href="https://github.com/routersys/EllipseForeground/releases">Releases</a> |
+<a href="paper/">論文</a> |
+<a href="https://doi.org/10.5281/zenodo.23318600">DOI</a> |
+<a href="../" hreflang="en" lang="en">English</a>
+</nav>
+</header>
+<hr>
+<main>
+<h2>導入</h2>
+<p>Python 3.11以降と、NumPy、SciPy、Pillowが要ります。Releasesから最新のパッケージをダウンロードして解凍し、中のwheelを入れます。</p>
+<pre>python -m pip install ellipse_foreground-X.Y.Z-py3-none-any.whl</pre>
+<h2>使い方</h2>
+<p>次のプログラムは、画像を読み、前景を囲む楕円を渡して、アルファマットを書き出します。同じ<code>Analysis</code>で楕円だけを変えて<code>extract</code>を呼ぶと、画像ごとに作った木を使い回します。</p>
+<pre><code>import numpy as np
+from PIL import Image
+
+from ellipse_foreground import Analysis, Ellipse, Mix
+
+source = np.asarray(Image.open("input.png").convert("RGB"))
+analysis = Analysis(source.astype(np.float32) / 255.0, source)
+ellipse = Ellipse(center_x=640, center_y=330, radius_x=190, radius_y=300)
+alpha = analysis.extract(ellipse, Mix.ADAPTIVE_COLOR)
+Image.fromarray(np.rint(alpha * 255).astype(np.uint8)).save("alpha.png")</code></pre>
+<h2>処理の流れ</h2>
+<ul>
+<li>画像を作業画像（既定は幅256画素）に縮め、4近傍の画素の格子の上に、単連結法の階層的な木を作ります。</li>
+<li>楕円に由来する事前分布、画素ごとの手がかり、境界項の和を最大にする木の切断を選びます。最適解は、動的計画法で厳密に求めます。</li>
+<li>手がかりは、色、テクスチャ、3×3パッチの最近傍の三つです。それぞれが楕円の内側と外側をどれだけ分けられるかに応じて、重みを決めます。</li>
+<li>低解像度のマスクを、画像の解像度のアルファマットに仕上げます。ジョイントバイラテラルアップサンプリング、色のヒストグラムによる補正、ガイデッドフィルタを使います。</li>
+</ul>
+<h2>速度と制限</h2>
+<ul>
+<li>NumPyとSciPyで書いた、CPU向けの実装です。1280×640画素の画像では、Core i7-1360Pで、<code>Analysis</code>の構築に約0.3秒、1回の<code>extract</code>に約1秒かかります。</li>
+<li>評価に使ったのは、キャラクターを背景に合成した画像です。写真の人物は評価しておらず、学習済みの分割モデルとの比較もしていません。論文にも、同じことを書いています。</li>
+</ul>
+<h2>リンク</h2>
+<ul>
+<li><a href="paper/">論文</a>、または<a href="../paper/ellipse-foreground-extraction.pdf">PDF</a>。</li>
+<li><a href="https://github.com/routersys/EllipseForeground#readme">README</a>: 動作要件、使い方、評価の再現、制限事項。</li>
+<li><a href="https://github.com/routersys/EllipseForeground/releases">Releases</a></li>
+<li>引用には<a href="https://doi.org/10.5281/zenodo.23318600">Zenodoの記録</a>を使ってください。</li>
+</ul>
+</main>
+<hr>
+<footer>
+<p>コードと論文のライセンスは<a href="https://github.com/routersys/EllipseForeground/blob/main/LICENSE.txt">BSD 3-Clause License</a>です。リポジトリにあるキャラクターのデータには、AIの学習への利用を禁止する<a href="https://github.com/routersys/EllipseForeground/blob/main/data/own/LICENSE.txt">独自の利用条件</a>があります。ほかの画像のライセンスは、<a href="https://github.com/routersys/EllipseForeground#%E7%94%BB%E5%83%8F%E3%81%A8%E7%B4%A0%E6%9D%90">README</a>にあります。</p>
+</footer>
+</body>
+</html>

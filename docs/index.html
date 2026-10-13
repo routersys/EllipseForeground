@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>EllipseForeground: foreground alpha matte from a rough ellipse, in Python</title>
+<meta name="description" content="A Python library that finds the alpha matte of an image's foreground from a rough ellipse. It is the reference implementation of a paper, with the evaluation code. An exact optimal cut of a single-linkage tree, no learned model.">
+<link rel="canonical" href="https://lib.routersys.com/EllipseForeground/">
+<link rel="alternate" hreflang="en" href="https://lib.routersys.com/EllipseForeground/">
+<link rel="alternate" hreflang="ja" href="https://lib.routersys.com/EllipseForeground/ja/">
+<link rel="alternate" hreflang="x-default" href="https://lib.routersys.com/EllipseForeground/">
+<link rel="icon" href="icon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EllipseForeground">
+<meta property="og:title" content="EllipseForeground: foreground alpha matte from a rough ellipse, in Python">
+<meta property="og:description" content="A Python library that finds the alpha matte of an image's foreground from a rough ellipse. It is the reference implementation of a paper, with the evaluation code. An exact optimal cut of a single-linkage tree, no learned model.">
+<meta property="og:url" content="https://lib.routersys.com/EllipseForeground/">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ja_JP">
+<style>body{max-width:44em;margin:1em auto;padding:0 1em;line-height:1.5}pre{overflow-x:auto}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"EllipseForeground","description":"A Python library that finds the alpha matte of an image's foreground from a rough ellipse. It is the reference implementation of a paper, with the evaluation code. An exact optimal cut of a single-linkage tree, no learned model.","programmingLanguage":"Python","runtimePlatform":"Python 3.11 or later","license":"https://opensource.org/license/bsd-3-clause","codeRepository":"https://github.com/routersys/EllipseForeground","url":"https://lib.routersys.com/EllipseForeground/","inLanguage":"en"}</script>
+</head>
+<body>
+<header>
+<h1>EllipseForeground</h1>
+<p>EllipseForeground finds the alpha matte of an image's foreground from a rough ellipse.<br>It is the reference implementation of a paper. It uses no learned model and no extra annotation: the input is an image and an ellipse.</p>
+<p><a href="paper/">Read the paper in your browser</a>. It is written in Japanese. Nothing is uploaded.</p>
+<nav>
+<a href="https://github.com/routersys/EllipseForeground">GitHub</a> |
+<a href="https://github.com/routersys/EllipseForeground/releases">Releases</a> |
+<a href="paper/">Paper</a> |
+<a href="https://doi.org/10.5281/zenodo.23318600">DOI</a> |
+<a href="ja/" hreflang="ja" lang="ja">日本語</a>
+</nav>
+</header>
+<hr>
+<main>
+<h2>Install</h2>
+<p>Python 3.11 or later, with NumPy, SciPy and Pillow. Download the package of the latest release from Releases, unzip it, and install the wheel in it.</p>
+<pre>python -m pip install ellipse_foreground-X.Y.Z-py3-none-any.whl</pre>
+<h2>Use</h2>
+<p>This program reads an image, takes an ellipse around the foreground and writes the alpha matte. Calling <code>extract</code> again on the same <code>Analysis</code> with another ellipse reuses the tree built for the image.</p>
+<pre><code>import numpy as np
+from PIL import Image
+
+from ellipse_foreground import Analysis, Ellipse, Mix
+
+source = np.asarray(Image.open("input.png").convert("RGB"))
+analysis = Analysis(source.astype(np.float32) / 255.0, source)
+ellipse = Ellipse(center_x=640, center_y=330, radius_x=190, radius_y=300)
+alpha = analysis.extract(ellipse, Mix.ADAPTIVE_COLOR)
+Image.fromarray(np.rint(alpha * 255).astype(np.uint8)).save("alpha.png")</code></pre>
+<h2>What it does</h2>
+<ul>
+<li>Shrinks the image to a working image, 256 pixels wide by default, and builds a single-linkage hierarchical tree on its 4-neighbour pixel grid.</li>
+<li>Chooses the cut of the tree that maximises the sum of an ellipse prior, per-pixel cues and a boundary term. Dynamic programming finds the optimum exactly.</li>
+<li>Uses three cues, colour, texture and the nearest 3×3 patch, and weights the cues by how well each separates the inside of the ellipse from the outside.</li>
+<li>Turns the low-resolution mask into an alpha matte at the image resolution: joint bilateral upsampling, a colour-histogram correction and a guided filter.</li>
+</ul>
+<h2>Speed and limits</h2>
+<ul>
+<li>It is written in NumPy and SciPy for the CPU. For an image of 1280×640 pixels on a Core i7-1360P, building the <code>Analysis</code> takes about 0.3 s and one <code>extract</code> takes about 1 s.</li>
+<li>The evaluation uses characters composited onto backgrounds. It does not cover photographs of people, and it does not compare with learned segmentation models. The paper says so as well.</li>
+</ul>
+<h2>Links</h2>
+<ul>
+<li><a href="paper/">The paper</a>, or <a href="paper/ellipse-foreground-extraction.pdf">the PDF</a>.</li>
+<li><a href="https://github.com/routersys/EllipseForeground#readme">README</a>: requirements, usage, how to reproduce the evaluation, limits.</li>
+<li><a href="https://github.com/routersys/EllipseForeground/releases">Releases</a></li>
+<li><a href="https://doi.org/10.5281/zenodo.23318600">Zenodo record</a>, for citing it.</li>
+</ul>
+</main>
+<hr>
+<footer>
+<p>The code and the paper are released under the <a href="https://github.com/routersys/EllipseForeground/blob/main/LICENSE.txt">BSD 3-Clause License</a>. The character data in the repository has its own <a href="https://github.com/routersys/EllipseForeground/blob/main/data/own/LICENSE.txt">terms</a>, which prohibit use for AI training. The licences of the other images are listed in the <a href="https://github.com/routersys/EllipseForeground#%E7%94%BB%E5%83%8F%E3%81%A8%E7%B4%A0%E6%9D%90">README</a>.</p>
+</footer>
+</body>
+</html>
