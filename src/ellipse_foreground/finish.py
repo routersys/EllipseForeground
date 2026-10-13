@@ -1,7 +1,8 @@
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
-from ellipse_foreground.imaging import box_mean, dilate, erode
+from ellipse_foreground.imaging import dilate, erode
 from ellipse_foreground.settings import FinishSettings
 
 
@@ -18,15 +19,19 @@ class BilateralUpsampler:
         columns = (np.arange(width) + 0.5) * small_width / width - 0.5
         first_row, first_column = np.floor(rows).astype(np.int64), np.floor(columns).astype(np.int64)
         row_fraction, column_fraction = (rows - first_row)[:, None], (columns - first_column)[None, :]
-        image64, small64 = image.astype(np.float64), small.astype(np.float64)
+        image_planes = [image[..., channel].astype(np.float64) for channel in range(3)]
+        small_planes = [small[..., channel].astype(np.float64) for channel in range(3)]
         self.taps: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = []
         self.denominator = np.full((height, width), 1e-9)
         for dy in (0, 1):
             for dx in (0, 1):
-                source_rows = np.clip(first_row + dy, 0, small_height - 1)[:, None]
-                source_columns = np.clip(first_column + dx, 0, small_width - 1)[None, :]
+                source_rows = np.clip(first_row + dy, 0, small_height - 1)
+                source_columns = np.clip(first_column + dx, 0, small_width - 1)
                 spatial = (row_fraction if dy else 1 - row_fraction) * (column_fraction if dx else 1 - column_fraction)
-                distance = ((image64 - small64[source_rows, source_columns]) ** 2).sum(axis=2)
+                distance = np.zeros((height, width))
+                for image_plane, small_plane in zip(image_planes, small_planes, strict=True):
+                    difference = image_plane - small_plane[source_rows][:, source_columns]
+                    distance += difference * difference
                 weight = spatial * np.exp(-distance / (2 * range_sigma**2))
                 self.taps.append((source_rows, source_columns, weight))
                 self.denominator += weight
@@ -34,7 +39,7 @@ class BilateralUpsampler:
     def __call__(self, mask: np.ndarray) -> np.ndarray:
         numerator = np.zeros(self.denominator.shape)
         for source_rows, source_columns, weight in self.taps:
-            numerator += weight * mask[source_rows, source_columns]
+            numerator += weight * mask[source_rows][:, source_columns]
         return (numerator / self.denominator).astype(np.float32)
 
 
@@ -70,32 +75,48 @@ def histogram_refinement(
     return (1 / (1 + np.exp(-logit))).astype(np.float32)
 
 
+def local_mean(array: np.ndarray, radius: int) -> np.ndarray:
+    size = (1,) * (array.ndim - 2) + (2 * radius + 1,) * 2
+    return ndimage.uniform_filter(array, size=size, mode="nearest")
+
+
+def inverse_3x3(matrices: np.ndarray) -> np.ndarray:
+    m = matrices
+    cofactors = np.empty_like(m)
+    cofactors[0, 0] = m[1, 1] * m[2, 2] - m[1, 2] * m[2, 1]
+    cofactors[0, 1] = m[1, 2] * m[2, 0] - m[1, 0] * m[2, 2]
+    cofactors[0, 2] = m[1, 0] * m[2, 1] - m[1, 1] * m[2, 0]
+    cofactors[1, 0] = m[0, 2] * m[2, 1] - m[0, 1] * m[2, 2]
+    cofactors[1, 1] = m[0, 0] * m[2, 2] - m[0, 2] * m[2, 0]
+    cofactors[1, 2] = m[0, 1] * m[2, 0] - m[0, 0] * m[2, 1]
+    cofactors[2, 0] = m[0, 1] * m[1, 2] - m[0, 2] * m[1, 1]
+    cofactors[2, 1] = m[0, 2] * m[1, 0] - m[0, 0] * m[1, 2]
+    cofactors[2, 2] = m[0, 0] * m[1, 1] - m[0, 1] * m[1, 0]
+    determinant = m[0, 0] * cofactors[0, 0] + m[0, 1] * cofactors[0, 1] + m[0, 2] * cofactors[0, 2]
+    return np.ascontiguousarray(cofactors.swapaxes(0, 1)) / determinant
+
+
 class GuidedFilter:
     def __init__(self, guide: np.ndarray, radius: int, epsilon: float) -> None:
-        guide = guide.astype(np.float64)
-        height, width = guide.shape[:2]
-        self.guide = guide
+        self.planes = np.ascontiguousarray(np.moveaxis(guide.astype(np.float64), 2, 0))
         self.radius = radius
-        self.mean_guide = np.stack([box_mean(guide[..., channel], radius) for channel in range(3)], axis=2)
-        variance = np.empty((height, width, 3, 3))
+        self.means = local_mean(self.planes, radius)
+        variance = np.empty((3, 3, *self.planes.shape[1:]))
         for first in range(3):
             for second in range(first, 3):
-                product = box_mean(guide[..., first] * guide[..., second], radius)
-                variance[..., first, second] = variance[..., second, first] = (
-                    product - self.mean_guide[..., first] * self.mean_guide[..., second]
-                )
-        self.variance = variance + epsilon * np.eye(3)
+                product = local_mean(self.planes[first] * self.planes[second], radius)
+                variance[first, second] = variance[second, first] = product - self.means[first] * self.means[second]
+            variance[first, first] += epsilon
+        self.inverse = inverse_3x3(variance)
 
     def __call__(self, source: np.ndarray) -> np.ndarray:
         source = source.astype(np.float64)
         radius = self.radius
-        mean_source = box_mean(source, radius)
-        correlation = np.stack([box_mean(self.guide[..., channel] * source, radius) for channel in range(3)], axis=2)
-        covariance = correlation - self.mean_guide * mean_source[..., None]
-        coefficients = np.linalg.solve(self.variance, covariance[..., None])[..., 0]
-        offset = mean_source - (coefficients * self.mean_guide).sum(axis=2)
-        mean_coefficients = np.stack([box_mean(coefficients[..., channel], radius) for channel in range(3)], axis=2)
-        return (mean_coefficients * self.guide).sum(axis=2) + box_mean(offset, radius)
+        mean_source = local_mean(source, radius)
+        covariance = local_mean(self.planes * source, radius) - self.means * mean_source
+        coefficients = np.einsum("ijhw,jhw->ihw", self.inverse, covariance)
+        offset = mean_source - np.einsum("chw,chw->hw", coefficients, self.means)
+        return np.einsum("chw,chw->hw", local_mean(coefficients, radius), self.planes) + local_mean(offset, radius)
 
 
 def guided_filter(guide: np.ndarray, source: np.ndarray, radius: int, epsilon: float) -> np.ndarray:

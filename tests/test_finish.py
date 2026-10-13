@@ -76,6 +76,41 @@ def test_a_finisher_keeps_no_state_between_masks():
     assert np.array_equal(finish(small, image, other, FinishSettings()), finisher(other))
 
 
+def direct_guided_filter(guide, source, radius, epsilon):
+    height, width = source.shape
+    padded_guide = np.pad(guide.astype(np.float64), ((radius, radius), (radius, radius), (0, 0)), mode="edge")
+    padded_source = np.pad(source.astype(np.float64), radius, mode="edge")
+    size = 2 * radius + 1
+    coefficients = np.empty((height, width, 3))
+    offsets = np.empty((height, width))
+    for row in range(height):
+        for column in range(width):
+            window_guide = padded_guide[row : row + size, column : column + size].reshape(-1, 3)
+            window_source = padded_source[row : row + size, column : column + size].reshape(-1)
+            mean_guide, mean_source = window_guide.mean(axis=0), window_source.mean()
+            covariance = (window_guide * window_source[:, None]).mean(axis=0) - mean_guide * mean_source
+            variance = (window_guide.T @ window_guide) / len(window_guide) - np.outer(mean_guide, mean_guide)
+            coefficient = np.linalg.solve(variance + epsilon * np.eye(3), covariance)
+            coefficients[row, column] = coefficient
+            offsets[row, column] = mean_source - coefficient @ mean_guide
+    padded_coefficients = np.pad(coefficients, ((radius, radius), (radius, radius), (0, 0)), mode="edge")
+    padded_offsets = np.pad(offsets, radius, mode="edge")
+    result = np.empty((height, width))
+    for row in range(height):
+        for column in range(width):
+            mean_coefficient = padded_coefficients[row : row + size, column : column + size].reshape(-1, 3).mean(axis=0)
+            result[row, column] = (
+                mean_coefficient @ guide[row, column] + padded_offsets[row : row + size, column : column + size].mean()
+            )
+    return result
+
+
+def test_guided_filter_matches_the_window_by_window_definition():
+    guide = random_work(11, 13, seed=6)
+    source = np.random.default_rng(7).random((11, 13))
+    assert np.allclose(guided_filter(guide, source, 2, 1e-3), direct_guided_filter(guide, source, 2, 1e-3), atol=1e-9)
+
+
 def test_finish_returns_an_alpha_in_the_unit_interval_with_the_image_shape():
     image, mask = split_image()
     alpha = finish(image[::2, ::2], image, mask, FinishSettings())
