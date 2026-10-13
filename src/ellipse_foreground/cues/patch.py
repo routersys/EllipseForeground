@@ -52,7 +52,7 @@ def exhaustive_distances(
     for start in range(0, len(vectors), settings.block_rows):
         queries = vectors[start : start + settings.block_rows]
         scores = buffer[: len(queries)]
-        np.dot(np.hstack([-2.0 * queries, np.ones((len(queries), 1))]), sample_matrix, out=scores)
+        np.matmul(np.hstack([-2.0 * queries, np.ones((len(queries), 1))]), sample_matrix, out=scores)
         _exclude_neighborhood(scores, start, column_of_pixel, shape, settings.exclusion)
         squared = scores.min(axis=1) + np.einsum("ij,ij->i", queries, queries)
         distances[start : start + len(queries)] = np.sqrt(np.clip(squared, 0.0, _UNREACHABLE_SQUARED))
@@ -93,7 +93,7 @@ def _window_minimum(
     left: np.ndarray, samples: _SortedSamples, low: int, high: int, excluded: np.ndarray, buffer: np.ndarray
 ) -> np.ndarray:
     scores = buffer[: len(left) * (high - low)].reshape(len(left), high - low)
-    np.dot(left, samples.rows[low:high].T, out=scores)
+    np.matmul(left, samples.rows[low:high].T, out=scores)
     rows, slots = np.nonzero((excluded >= low) & (excluded < high))
     scores[rows, excluded[rows, slots] - low] = np.inf
     return scores.min(axis=1)
