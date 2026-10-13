@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: このリポジトリを引用するときは、次の情報を使ってください。
 title: EllipseForeground
 type: software
-version: 1.1.0
+version: 1.1.1
 date-released: 2026-10-13
 authors:
   - name: routersys
