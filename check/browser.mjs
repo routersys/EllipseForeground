@@ -20,9 +20,12 @@ if (!executablePath) {
 }
 
 mkdirSync(OUTPUT, { recursive: true });
-const server = createSiteServer();
-await new Promise((done) => server.listen(0, "127.0.0.1", done));
-const base = `http://127.0.0.1:${server.address().port}/EllipseForeground/`;
+const remote = process.argv[2];
+const server = remote ? null : createSiteServer();
+if (server) {
+  await new Promise((done) => server.listen(0, "127.0.0.1", done));
+}
+const base = remote ? remote.replace(/\/?$/, "/") : `http://127.0.0.1:${server.address().port}/EllipseForeground/`;
 const browser = await puppeteer.launch({ executablePath, headless: true });
 
 const results = [];
@@ -163,7 +166,7 @@ for (const [label, path, status] of [
 }
 
 await browser.close();
-server.close();
+server?.close();
 const failed = results.filter((result) => !result.ok);
 console.log(failed.length === 0 ? `ok: ${results.length} 項目` : `NG: ${failed.length} / ${results.length} 項目`);
 process.exit(failed.length === 0 ? 0 : 1);

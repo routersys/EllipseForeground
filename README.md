@@ -40,7 +40,7 @@ npm ci
 node browser.mjs
 ```
 
-2段目は、ヘッドレスのChromeでの検査です。Chromeの場所は、環境変数`CHROME_PATH`で指定できます。確かめるのは、ページ数、描画、本文の層、移動、拡大縮小、検索、`#page=12`での開き方、幅390画素での表示、入口のページと404です。画面の写真は`check/out`に書き出されます。
+2段目は、ヘッドレスのChromeでの検査です。Chromeの場所は、環境変数`CHROME_PATH`で指定できます。確かめるのは、ページ数、描画、本文の層、移動、拡大縮小、検索、`#page=12`での開き方、幅390画素での表示、入口のページと404です。画面の写真は`check/out`に書き出されます。公開したサイトを調べるときは、`node browser.mjs https://lib.routersys.com/EllipseForeground/`のようにURLを渡します。そのときは、手元のサーバーを使いません。
 
 ## PDFを更新するとき
 
