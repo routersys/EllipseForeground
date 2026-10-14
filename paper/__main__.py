@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from paper.build import CHROME, build
-from paper.timing import measure
+from paper.timing import measure, measure_band
 
 REPOSITORY = Path(__file__).resolve().parent.parent
 
@@ -22,11 +22,16 @@ def parse(arguments: list[str]) -> argparse.Namespace:
     timing = commands.add_parser("timing")
     timing.add_argument("--data", type=Path, default=REPOSITORY / "data")
     timing.add_argument("--output", type=Path, default=REPOSITORY / "results" / "timing.json")
+    timing.add_argument("--band-only", action="store_true")
     return parser.parse_args(arguments)
 
 
 def main(arguments: list[str]) -> int:
     options = parse(arguments)
+    if options.command == "timing" and options.band_only:
+        summary = measure_band(options.data, options.output)
+        print(f"帯 {summary['band_ms']:.2f} ms、全画素 {summary['band_full_ms']:.2f} ms")
+        return 0
     if options.command == "timing":
         summary = measure(options.data, options.output)
         print(f"木 {summary['tree_ms']:.3f} ms、グラフカット {summary['graph_cut_ms']:.1f} ms")
