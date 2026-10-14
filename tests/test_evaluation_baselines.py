@@ -3,7 +3,9 @@ import pytest
 
 from ellipse_foreground.evaluation.baselines import (
     BASELINE_DIRECTORY,
+    COVERAGE_DIRECTORY,
     baseline_records,
+    box_coverage,
     ellipse_box,
     grabcut_alpha,
     main,
@@ -93,3 +95,22 @@ def test_grabcut_falls_back_to_the_rectangle_when_it_cannot_start():
     alpha, converged = grabcut_alpha(image, (0.0, 0.0, 60.0, 40.0), 1)
     assert not converged
     assert alpha.min() == 1.0
+
+
+def test_the_box_coverage_is_the_share_of_the_foreground_inside_the_box():
+    scene = make_scene()
+    rows, columns = np.nonzero(scene.alpha > 0.5)
+    width, height = columns.max() - columns.min() + 1, rows.max() - rows.min() + 1
+    whole = Ellipse(columns.mean(), rows.mean(), float(width), float(height))
+    assert box_coverage(scene, whole) == 1.0
+    left = Ellipse(float(columns.min()), rows.mean(), 3.0, 200.0)
+    assert 0.0 < box_coverage(scene, left) < 0.2
+
+
+def test_coverage_runs_without_a_predictor_and_writes_its_own_directory(tmp_path):
+    spec = GroupSpec("tiny", lambda data, selection: iter([make_scene()]), 2, None)
+    assert run_baselines(spec, tmp_path, tmp_path / "out", range(0, 10**6), None, coverage=True) == 1
+    records = read_records(tmp_path / "out" / COVERAGE_DIRECTORY, "tiny")
+    assert records
+    assert all(0.0 <= record["box_coverage"] <= 1.0 for record in records)
+    assert not (tmp_path / "out" / BASELINE_DIRECTORY).exists()

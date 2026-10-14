@@ -16,6 +16,7 @@ from ellipse_foreground.imaging import halve
 
 GRABCUT_ITERATIONS = 5
 BASELINE_DIRECTORY = "baselines"
+COVERAGE_DIRECTORY = "coverage"
 REPOSITORY = Path(__file__).resolve().parents[3]
 OPEN_END = 10**6
 
@@ -75,11 +76,29 @@ def sam_alphas(
     return outputs
 
 
+def informative_trials(scene: Scene, count: int) -> list[tuple[int, Ellipse]]:
+    context = SceneContext(scene)
+    return [(index, ellipse) for index, ellipse in enumerate(draw_trials(scene, count)) if context.informative(ellipse)]
+
+
+def box_coverage(scene: Scene, ellipse: Ellipse) -> float:
+    truth = scene.alpha > 0.5
+    left, top, right, bottom = ellipse_box(ellipse, truth.shape)
+    box = np.zeros_like(truth)
+    box[int(np.floor(top)) : int(np.ceil(bottom)), int(np.floor(left)) : int(np.ceil(right))] = True
+    return float((truth & box).sum() / truth.sum())
+
+
+def coverage_records(scene: Scene, count: int) -> list[dict]:
+    return [
+        {"scene": scene.index, "name": scene.name, "trial": index, "box_coverage": box_coverage(scene, ellipse)}
+        for index, ellipse in informative_trials(scene, count)
+    ]
+
+
 def baseline_records(scene: Scene, count: int, predictor: BoxPredictor | None) -> list[dict]:
     context = SceneContext(scene)
-    trials = [
-        (index, ellipse) for index, ellipse in enumerate(draw_trials(scene, count)) if context.informative(ellipse)
-    ]
+    trials = informative_trials(scene, count)
     shape = scene.image.shape[:2]
     boxes = [ellipse_box(ellipse, shape) for _, ellipse in trials]
     grabcut = [grabcut_alpha(scene.image, box, GRABCUT_ITERATIONS) for box in boxes]
@@ -98,14 +117,22 @@ def baseline_records(scene: Scene, count: int, predictor: BoxPredictor | None) -
     return records
 
 
-def run_baselines(spec: GroupSpec, data: Path, results: Path, selection: range, predictor: BoxPredictor | None) -> int:
-    directory = results / BASELINE_DIRECTORY
+def run_baselines(
+    spec: GroupSpec,
+    data: Path,
+    results: Path,
+    selection: range,
+    predictor: BoxPredictor | None,
+    coverage: bool = False,
+) -> int:
+    directory = results / (COVERAGE_DIRECTORY if coverage else BASELINE_DIRECTORY)
     processed = 0
     for scene in spec.scenes(data, selection):
         if scene.index in finished_scenes(directory, spec.name):
             continue
         suffix = "" if selection.start == 0 and selection.stop >= OPEN_END else f".{selection.start}-{selection.stop}"
-        append_records(directory / f"{spec.name}{suffix}.jsonl", baseline_records(scene, spec.trials, predictor))
+        records = coverage_records(scene, spec.trials) if coverage else baseline_records(scene, spec.trials, predictor)
+        append_records(directory / f"{spec.name}{suffix}.jsonl", records)
         processed += 1
         print(f"{spec.name} scene {scene.index} {scene.name}", flush=True)
     return processed
@@ -127,6 +154,7 @@ def parse(arguments: list[str]) -> argparse.Namespace:
     parser.add_argument("--photos", type=Path)
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument("--model-type", default="vit_b")
+    parser.add_argument("--coverage", action="store_true")
     return parser.parse_args(arguments)
 
 
@@ -140,7 +168,7 @@ def main(arguments: list[str]) -> int:
     else:
         spec = GROUPS[options.group]
     predictor = None if options.checkpoint is None else load_predictor(options.checkpoint, options.model_type)
-    run_baselines(spec, options.data, options.results, range(options.start, options.end), predictor)
+    run_baselines(spec, options.data, options.results, range(options.start, options.end), predictor, options.coverage)
     return 0
 
 
