@@ -3,6 +3,7 @@ from functools import cached_property
 
 import numpy as np
 
+from ellipse_foreground.band import band_cut
 from ellipse_foreground.boundary import BoundaryTerms
 from ellipse_foreground.cues.color import color_evidence
 from ellipse_foreground.cues.patch import choose_patch_samples, patch_evidence, patch_vectors
@@ -109,6 +110,10 @@ class Analysis:
     def graph_cut(self, scores: np.ndarray) -> np.ndarray:
         return graph_cut_labels(self.work, scores, self.settings.graph_cut)
 
+    def band_cut(self, scores: np.ndarray, mask: np.ndarray | None = None) -> np.ndarray:
+        mask = self.cut(scores) if mask is None else mask
+        return band_cut(self.work, scores, mask, self.settings.band, self.settings.graph_cut)
+
     @cached_property
     def finisher(self) -> Finisher:
         return Finisher(self.small, self.image, self.settings.finish)
@@ -116,7 +121,8 @@ class Analysis:
     def finish(self, mask: np.ndarray) -> np.ndarray:
         return self.finisher(mask.astype(np.float32))
 
-    def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR) -> np.ndarray:
+    def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR, refine: bool = False) -> np.ndarray:
         regions = self.regions(ellipse)
         weights = weights_for(mix, self.overlaps(regions), self.settings.weights)
-        return self.finish(self.cut(self.cue_maps(ellipse, regions).scores(weights)))
+        scores = self.cue_maps(ellipse, regions).scores(weights)
+        return self.finish(self.band_cut(scores) if refine else self.cut(scores))

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from ellipse_foreground import Analysis, BoundaryForm, CueWeights, Ellipse, Mix, Settings
+from ellipse_foreground.band import boundary_band
 from ellipse_foreground.settings import WorkSettings
 from tests.helpers import noisy_scene
 
@@ -80,6 +81,25 @@ def test_without_a_boundary_penalty_the_cut_selects_the_positive_pixels(scene, f
 def test_graph_cut_recovers_a_flat_body(scene, fixed_scores):
     analysis, body = scene
     assert foreground_iou(analysis.finish(analysis.graph_cut(fixed_scores)), body) > 0.9
+
+
+def test_band_cut_keeps_the_pixels_far_from_the_cut_boundary(scene, fixed_scores):
+    analysis, _ = scene
+    mask = analysis.cut(fixed_scores)
+    refined = analysis.band_cut(fixed_scores, mask)
+    assert refined.shape == mask.shape
+    assert refined.dtype == bool
+    far = ~boundary_band(mask, analysis.settings.band.radius)
+    assert np.array_equal(refined[far], mask[far])
+    assert np.array_equal(analysis.band_cut(fixed_scores), refined)
+
+
+def test_refined_extraction_recovers_a_flat_body(scene):
+    analysis, body = scene
+    alpha = analysis.extract(ELLIPSE, refine=True)
+    assert alpha.shape == body.shape
+    assert foreground_iou(alpha, body) > 0.9
+    assert np.array_equal(alpha, analysis.extract(ELLIPSE, refine=True))
 
 
 def test_individual_cue_methods_match_the_combined_cue_maps(scene):

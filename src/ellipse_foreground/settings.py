@@ -103,6 +103,11 @@ class GraphCutSettings:
 
 
 @dataclass(frozen=True)
+class BandSettings:
+    radius: int = 2
+
+
+@dataclass(frozen=True)
 class Settings:
     work: WorkSettings = WorkSettings()
     prior: PriorSettings = PriorSettings()
@@ -114,6 +119,7 @@ class Settings:
     weights: WeightSettings = WeightSettings()
     finish: FinishSettings = FinishSettings()
     graph_cut: GraphCutSettings = GraphCutSettings()
+    band: BandSettings = BandSettings()
 
 
 DEFAULT_SETTINGS = Settings()
