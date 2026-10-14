@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+MINIMUM_RADIUS = 2.0
+
 
 @dataclass(frozen=True)
 class Ellipse:
@@ -17,8 +19,37 @@ class Ellipse:
         top, bottom = rows.min(), rows.max() + 1
         return cls((left + right) / 2.0, (top + bottom) / 2.0, (right - left) / 2.0, (bottom - top) / 2.0)
 
+    @classmethod
+    def from_moments(cls, mask: np.ndarray) -> "Ellipse":
+        rows, columns = np.nonzero(mask)
+        return cls(
+            columns.mean() + 0.5,
+            rows.mean() + 0.5,
+            max(2.0 * columns.std(), MINIMUM_RADIUS),
+            max(2.0 * rows.std(), MINIMUM_RADIUS),
+        )
+
     def scaled(self, factor: float) -> "Ellipse":
         return Ellipse(self.center_x, self.center_y, self.radius_x * factor, self.radius_y * factor)
+
+    def stretched(self, factor_x: float, factor_y: float) -> "Ellipse":
+        return Ellipse(self.center_x, self.center_y, self.radius_x * factor_x, self.radius_y * factor_y)
+
+    def shifted(self, shift_x: float, shift_y: float) -> "Ellipse":
+        return Ellipse(
+            self.center_x + shift_x * self.radius_x,
+            self.center_y + shift_y * self.radius_y,
+            self.radius_x,
+            self.radius_y,
+        )
+
+    def blended(self, other: "Ellipse", weight: float) -> "Ellipse":
+        return Ellipse(
+            (1.0 - weight) * self.center_x + weight * other.center_x,
+            (1.0 - weight) * self.center_y + weight * other.center_y,
+            self.radius_x ** (1.0 - weight) * other.radius_x**weight,
+            self.radius_y ** (1.0 - weight) * other.radius_y**weight,
+        )
 
     def resized(self, scale_x: float, scale_y: float) -> "Ellipse":
         return Ellipse(
