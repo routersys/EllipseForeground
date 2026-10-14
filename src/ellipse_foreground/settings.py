@@ -105,6 +105,14 @@ class GraphCutSettings:
 @dataclass(frozen=True)
 class BandSettings:
     radius: int = 2
+    smoothness: float = 128.0
+
+
+@dataclass(frozen=True)
+class AgreementSettings:
+    gain: float = 3.0
+    floor: float = 0.2
+    ceiling: float = 2.0
 
 
 @dataclass(frozen=True)
@@ -120,6 +128,7 @@ class Settings:
     finish: FinishSettings = FinishSettings()
     graph_cut: GraphCutSettings = GraphCutSettings()
     band: BandSettings = BandSettings()
+    agreement: AgreementSettings = AgreementSettings()
 
 
 DEFAULT_SETTINGS = Settings()
