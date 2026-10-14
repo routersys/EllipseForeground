@@ -7,6 +7,7 @@ from ellipse_foreground.evaluation.experiments.ablation import ablation_record
 from ellipse_foreground.evaluation.experiments.adaptation import adaptation_record
 from ellipse_foreground.evaluation.experiments.comparison import comparison_record
 from ellipse_foreground.evaluation.experiments.context import SceneContext, Trial
+from ellipse_foreground.evaluation.experiments.holes import holes_record
 from ellipse_foreground.evaluation.experiments.models import model_records
 from ellipse_foreground.evaluation.experiments.refinement import refinement_record
 from ellipse_foreground.evaluation.experiments.resolution import WORK_WIDTHS, resolution_records
@@ -18,7 +19,7 @@ from ellipse_foreground.evaluation.sprites import collection_scenes, public_scen
 from ellipse_foreground.evaluation.trials import ERROR_MODELS
 from ellipse_foreground.settings import DEFAULT_SETTINGS, Settings
 
-EXPERIMENTS = ("trials", "comparison", "refinement", "adaptation", "models", "resolution")
+EXPERIMENTS = ("trials", "comparison", "refinement", "adaptation", "holes", "models", "resolution")
 DEFAULT_EXPERIMENTS = ("trials", "models", "resolution")
 SECONDARY_MODELS = ("S", "T", "L")
 COLLECTION_SEED = 78
@@ -105,6 +106,8 @@ def run_scene_experiments(
         store("refinement", spec.name, lambda: [refinement_record(context(), trial) for trial in trials()])
     if "adaptation" in experiments:
         store("adaptation", spec.name, lambda: [adaptation_record(context(), trial) for trial in trials()])
+    if "holes" in experiments:
+        store("holes", spec.name, lambda: [holes_record(context(), trial) for trial in trials()])
     if "trials" in experiments:
         store("ablation", spec.name, lambda: [ablation_record(context(), trial) for trial in trials()])
     if "models" in experiments:
