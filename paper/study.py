@@ -17,6 +17,14 @@ class Timing:
     problems: int
     boykov_kolmogorov_ms: float | None = None
     boykov_kolmogorov_library: str | None = None
+    band_ms: float | None = None
+    band_full_ms: float | None = None
+    band_share: float | None = None
+    band_radius: int | None = None
+
+    @property
+    def band_speedup(self) -> float | None:
+        return None if self.band_ms is None or self.band_full_ms is None else self.band_full_ms / self.band_ms
 
     @property
     def ratio(self) -> float:
@@ -40,6 +48,10 @@ class Timing:
             data["problems"],
             data.get("boykov_kolmogorov_ms"),
             data.get("boykov_kolmogorov_library"),
+            data.get("band_ms"),
+            data.get("band_full_ms"),
+            data.get("band_share"),
+            data.get("band_radius"),
         )
 
 

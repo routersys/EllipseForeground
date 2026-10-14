@@ -5,10 +5,13 @@ import numpy as np
 import pytest
 
 from ellipse_foreground import Analysis
-from ellipse_foreground.settings import Settings, WorkSettings
+from ellipse_foreground.band import band_problem
+from ellipse_foreground.settings import DEFAULT_SETTINGS, Settings, WorkSettings
 from paper.timing import (
+    band_flow,
     build_instance,
     build_solver,
+    flow_milliseconds,
     pixel_range,
     read_graph_cut_input,
     run_boykov_kolmogorov,
@@ -88,3 +91,16 @@ def test_boykov_kolmogorov_agrees_with_the_reference_implementation(instance_inp
     milliseconds, agreement = run_boykov_kolmogorov(library, instance.graph_cut_input, instance.graph_cut_labels, 2)
     assert len(milliseconds) == 2
     assert agreement > 0.99
+
+
+def test_the_band_problem_solved_by_boykov_kolmogorov_matches_the_band_cut(instance_inputs):
+    library = pytest.importorskip("maxflow")
+    analysis, _ = instance_inputs
+    scores = np.random.default_rng(6).normal(0.0, 8.0, analysis.shape)
+    mask = analysis.cut(scores)
+    problem = band_problem(analysis.work, scores, mask, DEFAULT_SETTINGS.band, DEFAULT_SETTINGS.graph_cut)
+    milliseconds, segments = flow_milliseconds(band_flow(library, problem), 2)
+    produced = mask.ravel().copy()
+    produced[problem.free] = segments
+    assert len(milliseconds) == 2
+    assert (produced == analysis.band_cut(scores, mask).ravel()).mean() > 0.99

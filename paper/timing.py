@@ -12,6 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from ellipse_foreground import Analysis, Mix
+from ellipse_foreground.band import BandProblem, band_problem
 from ellipse_foreground.evaluation.experiments.context import SceneContext
 from ellipse_foreground.graph_cut import graph_cut_labels, pairwise_weights
 from ellipse_foreground.grid import grid_edges
@@ -146,6 +147,94 @@ def run_boykov_kolmogorov(
     return milliseconds, float((produced == expected_labels).mean())
 
 
+def flow_milliseconds(build, repetitions: int) -> tuple[list[float], np.ndarray]:
+    samples: list[float] = []
+    segments = np.zeros(0, dtype=bool)
+    for repetition in range(repetitions + 1):
+        graph, nodes = build()
+        start = time.perf_counter()
+        graph.maxflow()
+        elapsed = (time.perf_counter() - start) * 1000.0
+        segments = ~graph.get_grid_segments(nodes).ravel()
+        if repetition > 0:
+            samples.append(elapsed)
+    return samples, segments
+
+
+def band_flow(library, problem: BandProblem):
+    def build():
+        graph = library.Graph[float](problem.count, len(problem.pairwise))
+        nodes = graph.add_nodes(problem.count)
+        graph.add_edges(problem.first, problem.second, problem.pairwise, problem.pairwise)
+        graph.add_grid_tedges(nodes, problem.source_weights, problem.sink_weights)
+        return graph, nodes
+
+    return build
+
+
+def full_flow(library, shape: tuple[int, int], weights: np.ndarray, unary: np.ndarray):
+    first, second = grid_edges(shape)
+
+    def build():
+        graph = library.Graph[float](shape[0] * shape[1], len(weights))
+        nodes = graph.add_grid_nodes(shape)
+        graph.add_edges(first, second, weights, weights)
+        graph.add_grid_tedges(nodes, np.maximum(unary, 0.0).reshape(shape), np.maximum(-unary, 0.0).reshape(shape))
+        return graph, nodes
+
+    return build
+
+
+def band_summary(data_root: Path, library) -> dict:
+    graph_settings, band_settings = DEFAULT_SETTINGS.graph_cut, DEFAULT_SETTINGS.band
+    band_samples: list[float] = []
+    full_samples: list[float] = []
+    shares: list[float] = []
+    agreement: list[float] = []
+    for key, index in TIMED_SCENES:
+        context = SceneContext(find_scene(data_root, key, index))
+        analysis = context.analysis
+        first, second = grid_edges(analysis.shape)
+        weights = pairwise_weights(analysis.work, first, second, graph_settings.sigmas)
+        for trial in context.trials(PROBLEMS_PER_SCENE):
+            scores = trial.cues.scores(weights_for(Mix.FIXED_MIX, trial.overlaps, context.settings.weights))
+            mask = analysis.cut(scores)
+            problem = band_problem(analysis.work, scores, mask, band_settings, graph_settings)
+            if problem is None:
+                continue
+            samples, segments = flow_milliseconds(band_flow(library, problem), GRAPH_CUT_REPETITIONS)
+            band_samples += samples
+            expected = analysis.band_cut(scores, mask)
+            produced = mask.ravel().copy()
+            produced[problem.free] = segments
+            agreement.append(float((produced == expected.ravel()).mean()))
+            shares.append(problem.count / mask.size)
+            unary = scores.ravel() / graph_settings.smoothness
+            samples, _ = flow_milliseconds(full_flow(library, analysis.shape, weights, unary), GRAPH_CUT_REPETITIONS)
+            full_samples += samples
+    return {
+        "band_ms": statistics.median(band_samples),
+        "band_full_ms": statistics.median(full_samples),
+        "band_share": statistics.mean(shares),
+        "band_radius": band_settings.radius,
+        "band_problems": len(shares),
+        "band_agreement": min(agreement),
+        "band_samples": band_samples,
+        "band_full_samples": full_samples,
+    }
+
+
+def measure_band(data_root: Path, output: Path) -> dict:
+    library = maxflow_library()
+    if library is None:
+        raise RuntimeError("PyMaxflowが必要です")
+    summary = json.loads(output.read_text(encoding="utf-8")) if output.exists() else {}
+    summary |= band_summary(data_root, library)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
 def processor_name() -> str:
     if platform.system() == "Windows":
         query = "(Get-CimInstance Win32_Processor | Select-Object -First 1 | ForEach-Object { $_.Name + '|' + $_.NumberOfCores })"
@@ -214,7 +303,7 @@ def measure(data_root: Path, output: Path) -> dict:
             "boykov_kolmogorov_agreement": min(flow_agreement),
             "boykov_kolmogorov_library": f"PyMaxflow {importlib.metadata.version('PyMaxflow')}",
             "boykov_kolmogorov_samples": flow_samples,
-        }
+        } | band_summary(data_root, flow_library)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return summary
