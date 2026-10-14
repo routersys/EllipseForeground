@@ -119,6 +119,8 @@ Image.fromarray(np.rint(alpha * 255).astype(np.uint8)).save("alpha.png")
 
 手がかりの組み合わせは`extract`の第2引数で選び、省略したときは`Mix.ADAPTIVE_COLOR`が使われます。第3引数に`refine=True`を渡すと、木の切断で得たマスクの境界から2画素以内の帯だけを、画素単位のグラフカットで再判定します。省略したときは再判定しません。帯の半径と強さは`Settings.band`で変えられ、マスクだけが要るときは`Analysis.band_cut`を呼べます。再判定の効果は、論文の5章に示しています。
 
+第4引数に`adaptive=True`を渡すと、楕円を摂動させたときの切断の安定性を求め、`Settings.stability.threshold`（既定は0.95）未満のときだけ、切断から楕円を求め直して切断をやり直します。求め直しの回数と、現在の楕円への混ぜ方は`Settings.refit`で変えられます。省略したときは、求め直しません。この段階が精度を上げるかどうかはデータセットにより異なり、論文の5章に結果を示しています。安定性だけが要るときは、`Analysis.solve`でスコアとマスクを求め、`Analysis.stability`に楕円、スコア、マスクを渡してください。値は0から1で、小さいほど、切断が楕円の摂動に左右されます。
+
 | 値 | 内容 |
 |---|---|
 | `Mix.PRIOR_ONLY` | 楕円に由来する事前分布だけを使います |
@@ -156,11 +158,11 @@ python -m ellipse_foreground.evaluation sprite1
 | `collection0`、`collection100` | 手元の素材から作る場面。色転写の強さは0%と100% | 素材の数の6倍 |
 | `photo` | 手元の写真と、手作業のアルファマットの組。PPM-100を想定している | 写真の枚数 |
 
-結果は`results`の下に書かれます。1行が1試行のJSONLファイルで、フォルダーは実験の種類ごとに分かれていて、`comparison`が構成の比較、`refinement`が帯の再判定の評価、`ablation`が境界項や仕上げなどの条件の変更、`models`が楕円の誤差モデルの変更、`resolution`が縮小する幅の変更です。途中で止めたときは、同じコマンドをもう一度実行すれば、終わった場面を飛ばして続きから実行されます。
+結果は`results`の下に書かれます。1行が1試行のJSONLファイルで、フォルダーは実験の種類ごとに分かれていて、`comparison`が構成の比較、`refinement`が帯の再判定の評価、`ablation`が境界項や仕上げなどの条件の変更、`models`が楕円の誤差モデルの変更、`resolution`が縮小する幅の変更、`adaptation`が楕円の摂動に対する安定性と再推定の評価、`holes`がマスクの穴埋めとの比較、`oracle`が正解から作った入力に置き換える診断です。途中で止めたときは、同じコマンドをもう一度実行すれば、終わった場面を飛ばして続きから実行されます。
 
 | オプション | 内容 |
 |---|---|
-| `--experiments` | 実行する実験をコンマで区切って指定します。`trials`、`comparison`、`refinement`、`models`、`resolution`から選べます。`comparison`は`trials`のうち構成の比較だけ、`refinement`は帯の再判定の評価だけです。省略すると、`trials`、`models`、`resolution`を実行し、`trials`には`refinement`も含まれます |
+| `--experiments` | 実行する実験をコンマで区切って指定します。`trials`、`comparison`、`refinement`、`adaptation`、`holes`、`oracle`、`models`、`resolution`から選べます。`comparison`は`trials`のうち構成の比較だけ、`refinement`は帯の再判定の評価だけです。省略すると、`trials`、`models`、`resolution`を実行し、`trials`には`refinement`も含まれます。`adaptation`、`holes`、`oracle`は時間がかかるため、`trials`には含まれず、指定したときだけ実行されます |
 | `--start`、`--end` | 場面の番号の範囲を指定します。範囲を指定したときは、結果が範囲を付けた名前のファイルに書かれます |
 | `--data` | `data`の場所です。デフォルトは、リポジトリの`data`です |
 | `--results` | 結果の保存先です。デフォルトは、リポジトリの`results`です |
