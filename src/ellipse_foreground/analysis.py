@@ -133,6 +133,25 @@ class Analysis:
         perturbed = perturbed_ellipses(ellipse, self.settings.stability)
         return float(np.mean([jaccard(mask, self.cut(self.prior_map(other) + appearance)) for other in perturbed]))
 
-    def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR, refine: bool = False) -> np.ndarray:
+    def refit(self, ellipse: Ellipse, mix: Mix, scores: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        settings = self.settings.refit
+        current = self.work_ellipse(ellipse)
+        for _ in range(settings.iterations):
+            if np.count_nonzero(mask) < settings.minimum_area:
+                break
+            current = current.blended(Ellipse.from_moments(mask), settings.damping)
+            scores, mask = self.solve(current.resized(1.0 / self.scale_x, 1.0 / self.scale_y), mix)
+        return scores, mask
+
+    def adapt(self, ellipse: Ellipse, mix: Mix, scores: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        if self.stability(ellipse, scores, mask) >= self.settings.stability.threshold:
+            return scores, mask
+        return self.refit(ellipse, mix, scores, mask)
+
+    def extract(
+        self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR, refine: bool = False, adaptive: bool = False
+    ) -> np.ndarray:
         scores, mask = self.solve(ellipse, mix)
+        if adaptive:
+            scores, mask = self.adapt(ellipse, mix, scores, mask)
         return self.finish(self.band_cut(scores, mask) if refine else mask)

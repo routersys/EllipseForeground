@@ -116,6 +116,13 @@ class StabilitySettings:
 
 
 @dataclass(frozen=True)
+class RefitSettings:
+    iterations: int = 2
+    damping: float = 0.5
+    minimum_area: int = 30
+
+
+@dataclass(frozen=True)
 class AgreementSettings:
     gain: float = 3.0
     floor: float = 0.2
@@ -137,6 +144,7 @@ class Settings:
     band: BandSettings = BandSettings()
     agreement: AgreementSettings = AgreementSettings()
     stability: StabilitySettings = StabilitySettings()
+    refit: RefitSettings = RefitSettings()
 
 
 DEFAULT_SETTINGS = Settings()
