@@ -96,6 +96,10 @@ class Results:
         subset = SUBSETS[key]
         return self._select("refinement", subset.group, subset)
 
+    def oracles(self, key: str) -> list[dict]:
+        subset = SUBSETS[key]
+        return self._select("oracle", subset.group, subset)
+
     def adaptations(self, key: str) -> list[dict]:
         subset = SUBSETS[key]
         return self._select("adaptation", subset.group, subset)

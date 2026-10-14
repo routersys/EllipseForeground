@@ -51,9 +51,9 @@ def test_citations_are_listed_in_the_bibliography(page):
 
 def test_the_added_sections_are_present(page):
     html, order = page
-    for heading in ("帯の再判定と穴埋めの比較", "楕円の摂動に対する安定性と再推定"):
+    for heading in ("帯の再判定と穴埋めの比較", "楕円の摂動に対する安定性と再推定", "誤差の要因の分解"):
         assert heading in html
-    for table in ("t:holes", "t:stab", "t:refit"):
+    for table in ("t:holes", "t:stab", "t:refit", "t:oracle", "t:oracle2", "t:unmix"):
         assert f'id="{table}"' in html
     assert "slabaugh2005" in order and "germani2026" in order and "moskalenko2026" in order
     assert "Slabaugh" in html

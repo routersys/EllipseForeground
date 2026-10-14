@@ -10,6 +10,12 @@ from paper.quantities import (
 from paper.results import EARLIER_SETS, PHOTO_SET, SETS, SUBSETS
 from paper.sections.ablation import largest_drop_form
 from paper.sections.baselines import abstract_baselines, baseline_discussion
+from paper.sections.diagnosis import (
+    abstract_diagnosis,
+    conclusion_diagnosis,
+    discussion_diagnosis,
+    future_diagnosis,
+)
 from paper.sections.holes import holes_discussion
 from paper.sections.refinement import (
     abstract_refinement,
@@ -82,6 +88,7 @@ def abstract(study: Study) -> str:
         f"テクスチャのみと色とパッチのみの優劣は画像データセットで異なり、両者を併用する固定重みは六つのデータセットのすべてで最良の構成とのIoUの差が{ceil3(summary.mix_regret)}以内であった。信頼度に基づく色の重みの調整の効果は、IoUで最大{f3(summary.adaptive_effect)}と小さい。"
         f"{graph_cut_abstract(comparison)}{ratio}。"
         f"{abstract_refinement(study)}"
+        f"{abstract_diagnosis(study)}"
         f"{abstract_adaptation(study)}"
     )
 
@@ -182,6 +189,7 @@ def discussion(study: Study) -> str:
         + graph_cut_discussion(study, comparison)
         + discussion_refinement(study)
         + holes_discussion(study)
+        + discussion_diagnosis(study)
         + discussion_stability(study)
         + baseline_discussion(study)
         + '<h3 id="s:disc_threat">妥当性への脅威</h3>\n'
@@ -198,9 +206,10 @@ def discussion(study: Study) -> str:
         '<p><b>外部の手法との比較。</b>GrabCutと、学習済みの分割モデルSAM<cite k="kirillov2023"></cite>のViT-B版との比較は、公開素材と写真に限り、入力は楕円の外接矩形である。提案手法とは入力の情報が同じではない。SAMの他の版や派生、マッティングのモデル、LooseCutやDeep GrabCutとは比較しておらず、これらのモデルは、本稿の手法より高い精度を出す可能性がある。外接矩形が前景を覆う割合ごとの比較は、層を分ける閾値を結果を見たあとに決めており、別のデータでは確かめていない。</p>\n'
         '<p><b>計算時間の測定範囲。</b>計算時間は、動的計画法と最小カットの1回あたりの時間だけを測った。楕円を動かすたびに必要な手がかりの再計算は測っておらず、特にパッチの最近傍探索は計算量が他の段より大きい（<ref k="s:cost"></ref>）。最適化の速さの差が、手がかりの再計算を含む更新全体の時間にどれだけ影響するかは、本稿では示していない。</p>\n'
         '<h3 id="s:disc_future">今後の課題</h3>\n'
-        "<p>二つの課題が残る。第一は、写真の人物のより多くの画像や、人物以外の被写体での評価と、覆う割合ごとの比較を別のデータで確かめることである。"
+        "<p>三つの課題が残る。第一は、写真の人物のより多くの画像や、人物以外の被写体での評価と、覆う割合ごとの比較を別のデータで確かめることである。"
         f"第二は、手がかりの信頼度を、境界付近の画素の識別性能と対応づける方法である。{agreement_future(study)}"
-        "楕円の内側と外側の標本のうち、境界に近い画素だけを使う方法が考えられる。</p>\n"
+        "楕円の内側と外側の標本のうち、境界に近い画素だけを使う方法が考えられる。"
+        f"第三は、{future_diagnosis(study)}</p>\n"
     )
 
 
@@ -224,6 +233,6 @@ def conclusion(study: Study) -> str:
         f"<p>デンドログラムの上の切断により、楕円をそのまま使う場合のIoUを、{f2(summary.ellipse_low)}〜{f2(summary.ellipse_high)}から、適応（色）の構成で{f2(summary.adaptive_low)}〜{f2(summary.adaptive_high)}に上げた。元の解像度の平坦さを使うテクスチャの手がかりは、色転写で色とパッチの手がかりの識別性能が下がる合成画像で有効であり、立ち絵1の全12条件でIoUが{f3(study.mean('sprite1', 'tex'))}になった。"
         f"一方、17体の転写0%では、色とパッチのみがテクスチャのみを上回る。両者の優劣はデータセットにより異なるが、併用する固定重みは、設計に使っていないデータセットを含むすべてのデータセットで、最良との差を{ceil3(summary.mix_regret)}以内に抑えた。</p>\n"
         f"<p>楕円の内側と外側の分布のバタチャリヤ係数は、テクスチャと色の識別性能と対応した（順位相関 {signed(correlations['texture'].pooled, 2)}、{signed(correlations['color'].pooled, 2)}）。しかし、係数に基づく色の重みの調整が固定重みに与える効果は、IoUで最大{f3(summary.adaptive_effect)}と小さかった。"
-        f"境界項の形は、強さを調整すれば精度が同程度になり、{largest_drop_form(study)}は倍率を大きくしたときの低下が最も大きかった。{graph_text}{conclusion_refinement(study)}{conclusion_stability(study)}</p>\n"
-        "<p>本稿の評価は、合成画像と、写真の人物100枚に限られ、学習済みモデルとの比較は、SAMのViT-B版に矩形を与えた場合に限る。GrabCutとSAMとの比較では、提案手法が全体として上回るとは言えない。覆う割合が大きいほど提案手法に有利な差は小さくなり、信頼区間が0を含まずに上回ったのは、楕円の外接矩形が前景の90%未満しか覆わない場合だけであり、この90%は結果を見たあとに決めた閾値である。写真の人物のより多くの画像での評価と、境界付近の画素に対応づけた信頼度が、今後の課題である。</p>\n"
+        f"境界項の形は、強さを調整すれば精度が同程度になり、{largest_drop_form(study)}は倍率を大きくしたときの低下が最も大きかった。{graph_text}{conclusion_refinement(study)}{conclusion_diagnosis(study)}{conclusion_stability(study)}</p>\n"
+        "<p>本稿の評価は、合成画像と、写真の人物100枚に限られ、学習済みモデルとの比較は、SAMのViT-B版に矩形を与えた場合に限る。GrabCutとSAMとの比較では、提案手法が全体として上回るとは言えない。覆う割合が大きいほど提案手法に有利な差は小さくなり、信頼区間が0を含まずに上回ったのは、楕円の外接矩形が前景の90%未満しか覆わない場合だけであり、この90%は結果を見たあとに決めた閾値である。写真の人物のより多くの画像での評価と、境界付近の画素に対応づけた信頼度と、標本の誤りを減らす方法が、今後の課題である。</p>\n"
     )

@@ -13,6 +13,7 @@ from paper.numbers import plain
 from paper.results import PHOTO_SET, SETS
 from paper.sections.baselines import coverage_summary
 from paper.sections.closing import abstract
+from paper.sections.diagnosis import diagnosis_summary, intro_diagnosis
 from paper.sections.refinement import refinement_summary
 from paper.sections.stability import adaptation_summary, intro_stability
 from paper.study import Study
@@ -106,5 +107,7 @@ def values(study: Study, data_root: Path) -> dict[str, str]:
         **coverage_summary(study),
         **refinement_summary(study),
         **adaptation_summary(study),
+        **diagnosis_summary(study),
         "stab_item": intro_stability(study),
+        "diag_item": intro_diagnosis(study),
     }

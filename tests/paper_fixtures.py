@@ -108,6 +108,36 @@ def refinement_record(group: str, scene: int, trial: int, rng: np.random.Generat
     }
 
 
+ORACLE_VARIANTS = (
+    "ellipse",
+    "prior",
+    "samples",
+    "both",
+    "samples_ct",
+    "ring_far",
+    "ring_near",
+    "core_same",
+    "core_all",
+    "unmix_truth",
+    "unmix_tree",
+    "unmix_population",
+)
+
+
+def oracle_record(group: str, scene: int, trial: int, rng: np.random.Generator) -> dict:
+    base = 0.8 + 0.02 * rng.standard_normal()
+    record = {
+        "scene": scene,
+        "name": f"{group}-{scene}",
+        "trial": trial,
+        "purity": {"core": float(rng.uniform(0.7, 0.95)), "ring": float(rng.uniform(0.9, 1.0))},
+        "tree": score(base, rng),
+    }
+    for index, name in enumerate(ORACLE_VARIANTS):
+        record[name] = score(base + 0.01 * (index % 4), rng)
+    return record
+
+
 def adaptation_record(group: str, scene: int, trial: int, rng: np.random.Generator) -> dict:
     base = 0.8 + 0.02 * rng.standard_normal()
     stability = float(rng.uniform(0.8, 1.0))
@@ -146,7 +176,7 @@ def write_results(directory: Path, seed: int = 0) -> None:
         [refinement_record("photo", scene, trial, rng) for scene in range(DEFAULT_SCENES) for trial in range(2)],
     )
     photo_pairs = [(scene, trial) for scene in range(DEFAULT_SCENES) for trial in range(2)]
-    for experiment, make in (("adaptation", adaptation_record), ("holes", holes_record)):
+    for experiment, make in (("oracle", oracle_record), ("adaptation", adaptation_record), ("holes", holes_record)):
         append_records(directory / experiment / "photo.jsonl", [make("photo", *p, rng) for p in photo_pairs])
     for group in ("public0", "public100", "photo"):
         scenes = DEFAULT_SCENES
@@ -177,7 +207,7 @@ def write_results(directory: Path, seed: int = 0) -> None:
         append_records(directory / "comparison" / f"{group}.jsonl", [comparison_record(group, *p, rng) for p in pairs])
         append_records(directory / "ablation" / f"{group}.jsonl", [ablation_record(group, *p, rng) for p in pairs])
         append_records(directory / "refinement" / f"{group}.jsonl", [refinement_record(group, *p, rng) for p in pairs])
-        for experiment, make in (("adaptation", adaptation_record), ("holes", holes_record)):
+        for experiment, make in (("oracle", oracle_record), ("adaptation", adaptation_record), ("holes", holes_record)):
             append_records(directory / experiment / f"{group}.jsonl", [make(group, *p, rng) for p in pairs])
         for model in ("S", "T", "L"):
             append_records(

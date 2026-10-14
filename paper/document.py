@@ -21,6 +21,7 @@ from paper.sections.ablation import (
     resolution_section,
 )
 from paper.sections.closing import conclusion, discussion
+from paper.sections.diagnosis import diagnosis_section
 from paper.sections.holes import holes_section
 from paper.sections.main import main_section
 from paper.sections.materials import data_table, values
@@ -69,6 +70,8 @@ def ablation_sections(study: Study) -> str:
         + models_section(study)
         + '\n<h3 id="s:abl_stab">楕円の摂動に対する安定性と再推定</h3>\n'
         + stability_section(study)
+        + '\n<h3 id="s:abl_diag">誤差の要因の分解</h3>\n'
+        + diagnosis_section(study)
         + '\n<h3 id="s:qual">定性的な結果</h3>\n'
         + qualitative_section(qualitative_text(study))
     )
