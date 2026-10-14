@@ -71,8 +71,9 @@ def test_labels_reach_the_minimum_energy_with_the_outside_fixed():
         free = boundary_band(mask, 1)
         first, second = grid_edges(mask.shape)
         pairwise = pairwise_weights(work, first, second, GRAPH.sigmas)
-        unary = scores.ravel() / GRAPH.smoothness
-        found = energy(band_cut(work, scores, mask, BandSettings(radius=1), GRAPH), unary, first, second, pairwise)
+        band = BandSettings(radius=1)
+        unary = scores.ravel() / band.smoothness
+        found = energy(band_cut(work, scores, mask, band, GRAPH), unary, first, second, pairwise)
         best = np.inf
         for bits in product((False, True), repeat=int(free.sum())):
             candidate = mask.copy()

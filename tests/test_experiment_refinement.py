@@ -5,7 +5,7 @@ import pytest
 
 from ellipse_foreground import Settings
 from ellipse_foreground.evaluation.experiments.context import SceneContext
-from ellipse_foreground.evaluation.experiments.refinement import BAND_RADII, refinement_record
+from ellipse_foreground.evaluation.experiments.refinement import BAND_RADII, BAND_SMOOTHNESS, refinement_record
 from ellipse_foreground.evaluation.results import read_records
 from ellipse_foreground.evaluation.runner import GroupSpec, run_group
 from ellipse_foreground.evaluation.scene import Scene, scene_from_composite
@@ -36,6 +36,20 @@ def test_the_record_has_a_score_for_every_radius(context, trial):
     for entry in [record["tree"], *record["band"].values()]:
         assert 0.0 <= entry["iou"] <= 1.0
         assert 0.0 <= entry["raw_iou"] <= 1.0
+        assert entry["mae"] >= 0.0
+
+
+def test_the_record_has_a_score_for_every_smoothness(context, trial):
+    record = refinement_record(context, trial)
+    assert set(record["smoothness"]) == {f"{value:g}" for value in BAND_SMOOTHNESS}
+    assert record["smoothness"]["128"]["iou"] == record["band"]["2"]["iou"]
+
+
+def test_the_record_has_the_agreement_variants(context, trial):
+    record = refinement_record(context, trial)
+    assert set(record["agreement"]) == {"tree", "band"}
+    for entry in record["agreement"].values():
+        assert 0.0 <= entry["iou"] <= 1.0
         assert entry["mae"] >= 0.0
 
 

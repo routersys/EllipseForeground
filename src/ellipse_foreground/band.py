@@ -35,7 +35,7 @@ def band_problem(
     node_of_pixel = np.cumsum(free) - 1
     inside_first, inside_second = free[first], free[second]
     both = inside_first & inside_second
-    unary = scores.ravel()[free] / graph.smoothness
+    unary = scores.ravel()[free] / band.smoothness
     source_weights = np.maximum(unary, 0.0)
     sink_weights = np.maximum(-unary, 0.0)
     for outer_free, inner, outer in (
