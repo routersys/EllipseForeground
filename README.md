@@ -117,7 +117,7 @@ Image.fromarray(np.rint(alpha * 255).astype(np.uint8)).save("alpha.png")
 
 同じ画像で楕円だけを変えるときは、`Analysis`を作り直さず、`extract`を呼び続けてください。木と境界項の計算が、画像ごとに1回で済むためです。
 
-手がかりの組み合わせは`extract`の第2引数で選び、省略したときは`Mix.ADAPTIVE_COLOR`が使われます。
+手がかりの組み合わせは`extract`の第2引数で選び、省略したときは`Mix.ADAPTIVE_COLOR`が使われます。第3引数に`refine=True`を渡すと、木の切断で得たマスクの境界から2画素以内の帯だけを、画素単位のグラフカットで再判定します。省略したときは再判定しません。帯の半径と強さは`Settings.band`で変えられ、マスクだけが要るときは`Analysis.band_cut`を呼べます。再判定の効果は、論文の5章に示しています。
 
 | 値 | 内容 |
 |---|---|
@@ -156,11 +156,11 @@ python -m ellipse_foreground.evaluation sprite1
 | `collection0`、`collection100` | 手元の素材から作る場面。色転写の強さは0%と100% | 素材の数の6倍 |
 | `photo` | 手元の写真と、手作業のアルファマットの組。PPM-100を想定している | 写真の枚数 |
 
-結果は`results`の下に書かれます。1行が1試行のJSONLファイルで、フォルダーは実験の種類ごとに分かれていて、`comparison`が構成の比較、`ablation`が境界項や仕上げなどの条件の変更、`models`が楕円の誤差モデルの変更、`resolution`が縮小する幅の変更です。途中で止めたときは、同じコマンドをもう一度実行すれば、終わった場面を飛ばして続きから実行されます。
+結果は`results`の下に書かれます。1行が1試行のJSONLファイルで、フォルダーは実験の種類ごとに分かれていて、`comparison`が構成の比較、`refinement`が帯の再判定の評価、`ablation`が境界項や仕上げなどの条件の変更、`models`が楕円の誤差モデルの変更、`resolution`が縮小する幅の変更です。途中で止めたときは、同じコマンドをもう一度実行すれば、終わった場面を飛ばして続きから実行されます。
 
 | オプション | 内容 |
 |---|---|
-| `--experiments` | 実行する実験をコンマで区切って指定します。`trials`、`comparison`、`models`、`resolution`から選べます。`comparison`は`trials`のうち構成の比較だけです。省略すると、`comparison`を除く三つを実行します |
+| `--experiments` | 実行する実験をコンマで区切って指定します。`trials`、`comparison`、`refinement`、`models`、`resolution`から選べます。`comparison`は`trials`のうち構成の比較だけ、`refinement`は帯の再判定の評価だけです。省略すると、`trials`、`models`、`resolution`を実行し、`trials`には`refinement`も含まれます |
 | `--start`、`--end` | 場面の番号の範囲を指定します。範囲を指定したときは、結果が範囲を付けた名前のファイルに書かれます |
 | `--data` | `data`の場所です。デフォルトは、リポジトリの`data`です |
 | `--results` | 結果の保存先です。デフォルトは、リポジトリの`results`です |
@@ -228,7 +228,7 @@ python -m paper timing
 
 5場面のスコアを、木の動的計画法と、画素グラフの最小カット（Dinic法）で解いたときの、1回あたりの時間が`results/timing.json`に書かれます。どちらもC#で書いた`paper/solvers`のプログラムで、単一スレッドです。実行の最初に、`dotnet build`で2つのプログラムを作ります。測るのは、木とグラフの構築と最初の実行を除いた、2回目の実行の時間です。ほかの重い処理は止めてから実行してください。
 
-PyMaxflowを入れてある場合（`pip install -e ".[timing]"`）は、同じ問題をBoykovとKolmogorovのアルゴリズムでも解き、`maxflow`の呼び出しだけの時間を`results/timing.json`に加えます。グラフの構築は測りません。PyMaxflowはGPLで配布されているため、依存には含めず、入れたときだけ使います。
+PyMaxflowを入れてある場合（`pip install -e ".[timing]"`）は、同じ問題をBoykovとKolmogorovのアルゴリズムでも解き、`maxflow`の呼び出しだけの時間を`results/timing.json`に加えます。グラフの構築は測りません。あわせて、木の切断のあとの帯の再判定で解く部分グラフと、全画素のグラフを同じ方法で解いた時間も加えます。PyMaxflowはGPLで配布されているため、依存には含めず、入れたときだけ使います。
 
 ---
 
