@@ -7,6 +7,7 @@ from ellipse_foreground.evaluation.experiments.ablation import ablation_record
 from ellipse_foreground.evaluation.experiments.comparison import comparison_record
 from ellipse_foreground.evaluation.experiments.context import SceneContext, Trial
 from ellipse_foreground.evaluation.experiments.models import model_records
+from ellipse_foreground.evaluation.experiments.refinement import refinement_record
 from ellipse_foreground.evaluation.experiments.resolution import WORK_WIDTHS, resolution_records
 from ellipse_foreground.evaluation.own import own_scenes
 from ellipse_foreground.evaluation.photos import photo_scenes
@@ -16,7 +17,7 @@ from ellipse_foreground.evaluation.sprites import collection_scenes, public_scen
 from ellipse_foreground.evaluation.trials import ERROR_MODELS
 from ellipse_foreground.settings import DEFAULT_SETTINGS, Settings
 
-EXPERIMENTS = ("trials", "comparison", "models", "resolution")
+EXPERIMENTS = ("trials", "comparison", "refinement", "models", "resolution")
 DEFAULT_EXPERIMENTS = ("trials", "models", "resolution")
 SECONDARY_MODELS = ("S", "T", "L")
 COLLECTION_SEED = 78
@@ -99,6 +100,8 @@ def run_scene_experiments(
 
     if "trials" in experiments or "comparison" in experiments:
         store("comparison", spec.name, lambda: [comparison_record(context(), trial) for trial in trials()])
+    if "trials" in experiments or "refinement" in experiments:
+        store("refinement", spec.name, lambda: [refinement_record(context(), trial) for trial in trials()])
     if "trials" in experiments:
         store("ablation", spec.name, lambda: [ablation_record(context(), trial) for trial in trials()])
     if "models" in experiments:
