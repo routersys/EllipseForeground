@@ -143,8 +143,6 @@ def sets_where(study: Study, name: str, outcome: str) -> list[str]:
 
 
 def abstract_baselines(study: Study) -> str:
-    summary = coverage_summary(study)
-
     def clause(name: str) -> str:
         higher, lower = sets_where(study, name, "higher"), sets_where(study, name, "lower")
         if higher and lower:
@@ -158,10 +156,23 @@ def abstract_baselines(study: Study) -> str:
     return (
         "GrabCutとSAM（ViT-B）に楕円の外接矩形を与えた比較では、"
         f"IoUの差は、GrabCutでは{clause('grabcut')}。SAMの推定IoU最大の出力では{clause('sam_best')}。"
-        "一方、外接矩形が前景を覆う割合と、提案手法から各手法を引いたIoUの差との順位相関は、"
-        f"GrabCutに対して{summary['cov_rho_grabcut']}、SAMに対して{summary['cov_rho_sam']}で、覆う割合が大きいほど提案手法に有利な差は小さい。"
-        f"覆う割合が90%未満の{summary['cov_n_low']}試行では、提案手法のIoUは、{summary['cov_grabcut_low']}、{summary['cov_sam_low']}。"
-        "この90%は結果を見たあとに決めた閾値である。"
+        f"{abstract_coverage(study)}"
+    )
+
+
+def abstract_coverage(study: Study) -> str:
+    rows = coverage_rows(study)
+    low = stratum(rows, STRATA[0][0], STRATA[0][1])
+    trends = (coverage_trend(rows, "grabcut"), coverage_trend(rows, "sam_best"))
+    margins = (difference_interval(low, "tree", "grabcut"), difference_interval(low, "tree", "sam_best"))
+    trend_clear = "（区間は0を含まない）" if all(below_zero(trend) for trend in trends) else ""
+    margin_clear = "（区間は0を含まない）" if all(above_zero(margin) for margin in margins) else ""
+    direction = "高い" if all(margin.mean > 0 for margin in margins) else "異なる"
+    return (
+        "一方、外接矩形が前景を覆う割合が大きいほど、提案手法に有利なIoUの差は小さく、"
+        f"順位相関は、GrabCutとの差で{signed(trends[0].mean)}、SAMとの差で{signed(trends[1].mean)}である{trend_clear}。"
+        f"覆う割合が90%未満の{len(low)}試行では、提案手法のIoUはGrabCutより{f3(margins[0].mean)}、"
+        f"SAMより{f3(margins[1].mean)}{direction}{margin_clear}。この90%は結果を見たあとに決めた閾値である。"
     )
 
 

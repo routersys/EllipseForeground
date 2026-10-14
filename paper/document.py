@@ -24,6 +24,7 @@ from paper.sections.closing import conclusion, discussion
 from paper.sections.main import main_section
 from paper.sections.materials import data_table, values
 from paper.sections.qualitative import qualitative_section, qualitative_text
+from paper.sections.refinement import refinement_section
 from paper.study import Study
 
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -52,6 +53,8 @@ def ablation_sections(study: Study) -> str:
         + boundary_figure()
         + '\n<h3 id="s:abl_gc">グラフカットとの比較</h3>\n'
         + graph_cut_section(study)
+        + '\n<h3 id="s:abl_band">境界の帯の再判定</h3>\n'
+        + refinement_section(study)
         + '\n<h3 id="s:abl_res">解像度の影響</h3>\n'
         + resolution_section(study)
         + '\n<h3 id="s:abl_prior">事前分布の内側の強さ</h3>\n'
