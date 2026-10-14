@@ -16,6 +16,7 @@ def table_html(
     best: set[tuple[int, int]] | None = None,
     widths: Sequence[str] | None = None,
     group: Sequence[tuple[str, int]] | None = None,
+    dense: bool = False,
 ) -> str:
     left = [bool(align) and align[column] == "l" for column in range(len(header))]
     heads = "".join(tag("th", title, ["l"] if left[column] else []) for column, title in enumerate(header))
@@ -38,5 +39,6 @@ def table_html(
         spans = "".join(tag("th", title, ["grp"], f' colspan="{span}"' if span > 1 else "") for title, span in group)
         groups = f"<tr>{spans}</tr>"
     caption_block = f'<div class="tcap" id="{identifier}"><span class="no">表</span>{caption}</div>'
-    table = f'<table class="t">{columns}<thead>{groups}<tr>{heads}</tr></thead><tbody>{"".join(body)}</tbody></table>'
+    table_class = "t dense" if dense else "t"
+    table = f'<table class="{table_class}">{columns}<thead>{groups}<tr>{heads}</tr></thead><tbody>{"".join(body)}</tbody></table>'
     return f'<div class="table-block">{caption_block}{table}</div>'

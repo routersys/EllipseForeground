@@ -1,6 +1,6 @@
 import numpy as np
 
-from paper.numbers import interval_text, percent, signed
+from paper.numbers import interval_stack, percent, signed
 from paper.sections.pairs import classified_by, paired, value
 from paper.sections.refinement import REFINE_SETS, RefineSet, names_of
 from paper.study import Study
@@ -27,10 +27,10 @@ def holes_table(rows: dict[str, list[dict]]) -> str:
             [
                 selection.short,
                 percent(hole_share(data)),
-                interval_text(paired(data, value("fill"), value("tree"))),
-                interval_text(paired(data, value("band"), value("tree"))),
-                interval_text(paired(data, value("fill_band"), value("tree"))),
-                interval_text(paired(data, value("fill_band"), value("band"))),
+                interval_stack(paired(data, value("fill"), value("tree"))),
+                interval_stack(paired(data, value("band"), value("tree"))),
+                interval_stack(paired(data, value("fill_band"), value("tree"))),
+                interval_stack(paired(data, value("fill_band"), value("band"))),
             ]
         )
     return table_html(
@@ -46,7 +46,8 @@ def holes_table(rows: dict[str, list[dict]]) -> str:
         ],
         body,
         align=["l", "", "", "", "", ""],
-        widths=["15%", "9%", "19%", "19%", "19%", "19%"],
+        widths=["20%", "10%", "17.5%", "17.5%", "17.5%", "17.5%"],
+        dense=True,
     )
 
 

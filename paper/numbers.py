@@ -46,5 +46,9 @@ def interval_text(interval: Interval, digits: int = 3) -> str:
     return f"{signed(interval.mean, digits)}［{signed(interval.low, digits)}，{signed(interval.high, digits)}］"
 
 
+def interval_stack(interval: Interval, digits: int = 3) -> str:
+    return f"{signed(interval.mean, digits)}<br>［{signed(interval.low, digits)}，{signed(interval.high, digits)}］"
+
+
 def plain(value: float) -> str:
     return f"{value:g}"

@@ -1,6 +1,7 @@
 import math
 
-from paper.numbers import ceil3, f3_zero, signed
+from ellipse_foreground.evaluation.statistics import Interval
+from paper.numbers import ceil3, f3_zero, interval_stack, interval_text, signed
 from paper.table import table_html
 
 
@@ -13,6 +14,13 @@ def test_number_formats():
     assert ceil3(0.0211) == "0.022"
     assert ceil3(0.021) == "0.021"
     assert math.isclose(float(ceil3(0.3)), 0.3)
+
+
+def test_the_stacked_interval_has_the_same_numbers_on_two_lines():
+    interval = Interval(0.0123, -0.004, 0.0456)
+    assert interval_text(interval) == "+0.012［-0.004，+0.046］"
+    assert interval_stack(interval) == "+0.012<br>［-0.004，+0.046］"
+    assert interval_stack(interval, 2) == "+0.01<br>［0.00，+0.05］"
 
 
 def test_table_marks_best_cells_and_left_aligned_columns():

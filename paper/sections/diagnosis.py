@@ -2,7 +2,7 @@ import numpy as np
 
 from ellipse_foreground.evaluation.experiments.oracle import ERODE_DEPTH
 from ellipse_foreground.evaluation.experiments.unmixing import OCCUPANCY_EDGES
-from paper.numbers import f2, f3, interval_text, plain, signed
+from paper.numbers import f2, f3, interval_stack, plain, signed
 from paper.results import PHOTO_SET, SETS
 from paper.sections.pairs import classified_by, paired, value
 from paper.sections.refinement import REFINE_SETS, RefineSet, datasets_phrase, names_of, row_phrase
@@ -48,7 +48,7 @@ def purity_text(rows: list[dict], part: str) -> str:
 
 
 def difference_cells(rows: list[dict], names: tuple[tuple[str, str], ...], reference: str = "tree") -> list[str]:
-    return [interval_text(paired(rows, value(name), value(reference))) for name, _ in names]
+    return [interval_stack(paired(rows, value(name), value(reference))) for name, _ in names]
 
 
 def oracle_table(rows: dict[str, list[dict]]) -> str:
@@ -70,7 +70,8 @@ def oracle_table(rows: dict[str, list[dict]]) -> str:
         ],
         body,
         align=["l", "", "", "", "", ""],
-        widths=["15%", "9%", "19%", "19%", "19%", "19%"],
+        widths=["18%", "8%", "18.5%", "18.5%", "18.5%", "18.5%"],
+        dense=True,
     )
 
 
@@ -95,12 +96,13 @@ def decomposition_table(rows: dict[str, list[dict]]) -> str:
             "近い背景<br>［95%信頼区間］",
             "前景（同じ範囲）<br>［95%信頼区間］",
             "前景（画像全体）<br>［95%信頼区間］",
-            "前景の標本の純度",
-            "背景の標本の純度",
+            "前景の純度",
+            "背景の純度",
         ],
         body,
         align=["l", "", "", "", "", "", ""],
-        widths=["14%", "17%", "17%", "17%", "17%", "9%", "9%"],
+        widths=["18%", "15.5%", "15.5%", "15.5%", "15.5%", "10%", "10%"],
+        dense=True,
     )
 
 
@@ -111,7 +113,7 @@ def mixture_table(rows: dict[str, list[dict]]) -> str:
         body.append(
             [
                 selection.short,
-                interval_text(paired(data, value("samples_ct"), value("tree"))),
+                interval_stack(paired(data, value("samples_ct"), value("tree"))),
                 *difference_cells(data, MIXTURES),
             ]
         )
@@ -127,7 +129,8 @@ def mixture_table(rows: dict[str, list[dict]]) -> str:
         ],
         body,
         align=["l", "", "", "", ""],
-        widths=["16%", "21%", "21%", "21%", "21%"],
+        widths=["18%", "22.5%", "19.5%", "20%", "20%"],
+        dense=True,
     )
 
 

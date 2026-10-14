@@ -11,7 +11,7 @@ from ellipse_foreground.evaluation.statistics import (
 )
 from ellipse_foreground.settings import DEFAULT_SETTINGS
 from paper.markup import figure
-from paper.numbers import f2, f3, interval_text, percent, plain, signed
+from paper.numbers import f2, f3, interval_stack, interval_text, percent, plain, signed
 from paper.quantities import rank_correlation
 from paper.sections.baselines import classify
 from paper.sections.pairs import classified_by, mean_difference, paired, value, with_values
@@ -173,7 +173,8 @@ def stability_table(rows: dict[str, list[dict]], intervals: dict[str, Interval])
         body,
         align=["l", "", "", "", "", "", "", ""],
         sub_rows=(len(REFINE_SETS),),
-        widths=["17%", "8%", "10%", "19%", "8%", "12%", "13%", "13%"],
+        widths=["18%", "6%", "10.5%", "21%", "5.5%", "11.5%", "13.5%", "14%"],
+        dense=True,
     )
 
 
@@ -181,10 +182,10 @@ def refit_cells(name: str, data: list[dict]) -> list[str]:
     low = unstable_difference(data, "refit", "tree")
     return [
         name,
-        interval_text(paired(data, value("refit"), value("tree"))),
-        interval_text(paired(data, gated_value("refit", "tree"), value("tree"))),
-        "−" if low is None else interval_text(low),
-        interval_text(paired(data, gated_value("refit_band", "band"), value("band"))),
+        interval_stack(paired(data, value("refit"), value("tree"))),
+        interval_stack(paired(data, gated_value("refit", "tree"), value("tree"))),
+        "−" if low is None else interval_stack(low),
+        interval_stack(paired(data, gated_value("refit_band", "band"), value("band"))),
     ]
 
 
@@ -200,12 +201,13 @@ def refit_table(rows: dict[str, list[dict]], unseen: list[dict]) -> str:
             "常に再推定<br>［95%信頼区間］",
             "不安定なときだけ<br>［95%信頼区間］",
             "閾値未満の試行だけ<br>［95%信頼区間］",
-            "帯と併用（不安定なときだけ）<br>［95%信頼区間］",
+            "帯と併用<br>［95%信頼区間］",
         ],
         body,
         align=["l", "", "", "", ""],
         sub_rows=(len(REFINE_SETS),) if unseen else (),
-        widths=["20%", "20%", "20%", "20%", "20%"],
+        widths=["22%", "19.5%", "19.5%", "19.5%", "19.5%"],
+        dense=True,
     )
 
 

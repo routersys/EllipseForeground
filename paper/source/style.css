@@ -48,6 +48,9 @@ table.t tbody tr:last-child td { border-bottom: 1.1pt solid #111; }
 table.t tr.sep td { border-top: 0.4pt solid #888; }
 table.t tr.sub td { background: #f1f1f1; }
 table.t td.best { font-weight: 700; }
+table.t.dense { font-size: 8pt; line-height: 1.4; }
+table.t.dense th, table.t.dense td { padding: 1mm 1.6mm; }
+table.t.dense thead th { font-size: 7.3pt; padding: 1.1mm 0.8mm; }
 table.t td.l, table.t th.l { text-align: left; }
 table.t td.c, table.t th.c { text-align: center; }
 .tfoot { font-size: 8.4pt; line-height: 1.55; text-indent: 0; margin: 1.6mm 0 5mm; text-align: justify; }
