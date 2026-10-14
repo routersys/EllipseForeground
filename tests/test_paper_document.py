@@ -49,6 +49,12 @@ def test_citations_are_listed_in_the_bibliography(page):
     assert html.count('<li><span class="n">[') == len(order)
 
 
+def test_the_holes_section_is_present(page):
+    html, _ = page
+    assert "帯の再判定と穴埋めの比較" in html
+    assert 'id="t:holes"' in html
+
+
 def test_timing_ratio_is_stated_in_text(page):
     html, _ = page
     assert "約80倍" in html

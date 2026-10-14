@@ -108,6 +108,20 @@ def refinement_record(group: str, scene: int, trial: int, rng: np.random.Generat
     }
 
 
+def holes_record(group: str, scene: int, trial: int, rng: np.random.Generator) -> dict:
+    base = 0.8 + 0.02 * rng.standard_normal()
+    return {
+        "scene": scene,
+        "name": f"{group}-{scene}",
+        "trial": trial,
+        "hole_share": float(rng.uniform(0.0, 0.05)),
+        "tree": score(base, rng),
+        "fill": score(base + 0.005, rng),
+        "band": score(base + 0.01, rng),
+        "fill_band": score(base + 0.012, rng),
+    }
+
+
 def write_results(directory: Path, seed: int = 0) -> None:
     rng = np.random.default_rng(seed)
     photos = [comparison_record("photo", scene, trial, rng) for scene in range(DEFAULT_SCENES) for trial in range(2)]
@@ -116,6 +130,8 @@ def write_results(directory: Path, seed: int = 0) -> None:
         directory / "refinement" / "photo.jsonl",
         [refinement_record("photo", scene, trial, rng) for scene in range(DEFAULT_SCENES) for trial in range(2)],
     )
+    photo_pairs = [(scene, trial) for scene in range(DEFAULT_SCENES) for trial in range(2)]
+    append_records(directory / "holes" / "photo.jsonl", [holes_record("photo", *p, rng) for p in photo_pairs])
     for group in ("public0", "public100", "photo"):
         scenes = DEFAULT_SCENES
         records = [
@@ -145,6 +161,7 @@ def write_results(directory: Path, seed: int = 0) -> None:
         append_records(directory / "comparison" / f"{group}.jsonl", [comparison_record(group, *p, rng) for p in pairs])
         append_records(directory / "ablation" / f"{group}.jsonl", [ablation_record(group, *p, rng) for p in pairs])
         append_records(directory / "refinement" / f"{group}.jsonl", [refinement_record(group, *p, rng) for p in pairs])
+        append_records(directory / "holes" / f"{group}.jsonl", [holes_record(group, *p, rng) for p in pairs])
         for model in ("S", "T", "L"):
             append_records(
                 directory / "models" / f"{group}-{model}.jsonl", [model_record(group, *p, model, rng) for p in pairs]

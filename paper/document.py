@@ -21,6 +21,7 @@ from paper.sections.ablation import (
     resolution_section,
 )
 from paper.sections.closing import conclusion, discussion
+from paper.sections.holes import holes_section
 from paper.sections.main import main_section
 from paper.sections.materials import data_table, values
 from paper.sections.qualitative import qualitative_section, qualitative_text
@@ -55,6 +56,8 @@ def ablation_sections(study: Study) -> str:
         + graph_cut_section(study)
         + '\n<h3 id="s:abl_band">境界の帯の再判定</h3>\n'
         + refinement_section(study)
+        + '\n<h3 id="s:abl_holes">帯の再判定と穴埋めの比較</h3>\n'
+        + holes_section(study)
         + '\n<h3 id="s:abl_res">解像度の影響</h3>\n'
         + resolution_section(study)
         + '\n<h3 id="s:abl_prior">事前分布の内側の強さ</h3>\n'

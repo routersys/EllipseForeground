@@ -10,6 +10,7 @@ from paper.quantities import (
 from paper.results import EARLIER_SETS, PHOTO_SET, SETS, SUBSETS
 from paper.sections.ablation import largest_drop_form
 from paper.sections.baselines import abstract_baselines, baseline_discussion
+from paper.sections.holes import holes_discussion
 from paper.sections.refinement import (
     abstract_refinement,
     agreement_future,
@@ -178,6 +179,7 @@ def discussion(study: Study) -> str:
         "この関係を境界付近の画素の識別性能と対応づける方法は、本稿では示せていない。</p>\n"
         + graph_cut_discussion(study, comparison)
         + discussion_refinement(study)
+        + holes_discussion(study)
         + baseline_discussion(study)
         + '<h3 id="s:disc_threat">妥当性への脅威</h3>\n'
         '<p><b>合成による評価。</b>評価に使った画像は、立ち絵と背景を合成したものである。前景と背景は別の出自を持つため、実際の写真に比べて絵柄の違いが大きく、外観の手がかりに有利に働くと考えられる。写真の人物での評価は、PPM-100の100枚に限られる（<ref k="s:photo"></ref>）。前景と背景が連続する画像や、人物以外の被写体での結果は示していない。また、元の解像度の平坦さの手がかりは、一様な塗りの前景を前提にしており、写真では識別性能が低かったが、その理由は確かめていない。</p>\n'
