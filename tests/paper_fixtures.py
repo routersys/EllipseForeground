@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import numpy as np
@@ -114,6 +115,11 @@ def write_results(directory: Path, seed: int = 0) -> None:
             for trial in range(DEFAULT_TRIALS)
         ]
         append_records(directory / "baselines" / f"{group}.jsonl", records)
+        coverage = [
+            {"scene": record["scene"], "name": record["name"], "trial": record["trial"], "box_coverage": share}
+            for record, share in zip(records, itertools.cycle((0.85, 0.93, 1.0)), strict=False)
+        ]
+        append_records(directory / "coverage" / f"{group}.jsonl", coverage)
     for key in SETS:
         group = SUBSETS[key].group
         scenes = SCENE_COUNT.get(group, DEFAULT_SCENES)

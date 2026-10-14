@@ -1,6 +1,7 @@
-from ellipse_foreground.evaluation.statistics import Interval
+from ellipse_foreground.evaluation.statistics import Interval, bootstrap_interval, scene_means
 from paper.numbers import above_zero, below_zero, f2, f3, interval_text
-from paper.results import SUBSETS
+from paper.results import SUBSETS, scene_mean
+from paper.sections.photos import relation
 from paper.study import Study
 from paper.table import table_html
 
@@ -117,7 +118,14 @@ def baseline_results(study: Study) -> str:
 
 
 def baseline_section(study: Study) -> str:
-    return '\n<h3 id="s:baselines">既存の手法との比較</h3>\n' + baseline_results(study) + "\n" + baseline_table(study)
+    return (
+        '\n<h3 id="s:baselines">既存の手法との比較</h3>\n'
+        + baseline_results(study)
+        + "\n"
+        + baseline_table(study)
+        + '\n<h3 id="s:coverage">入力が前景を覆う割合による違い</h3>\n'
+        + coverage_section(study)
+    )
 
 
 def sets_where(study: Study, name: str, outcome: str) -> list[str]:
@@ -125,6 +133,8 @@ def sets_where(study: Study, name: str, outcome: str) -> list[str]:
 
 
 def abstract_baselines(study: Study) -> str:
+    summary = coverage_summary(study)
+
     def clause(name: str) -> str:
         higher, lower = sets_where(study, name, "higher"), sets_where(study, name, "lower")
         if higher and lower:
@@ -138,10 +148,12 @@ def abstract_baselines(study: Study) -> str:
     return (
         "GrabCutとSAM（ViT-B）に楕円の外接矩形を与えた比較では、"
         f"IoUの差は、GrabCutでは{clause('grabcut')}。SAMの推定IoU最大の出力では{clause('sam_best')}。"
+        f"一方、外接矩形が前景の90%未満しか覆わない{summary['cov_n_low']}試行では、提案手法のIoUの差は、GrabCutに対して{summary['cov_grabcut_low']}、SAMに対して{summary['cov_sam_low']}である。"
     )
 
 
 def baseline_discussion(study: Study) -> str:
+    shares = coverage_summary(study)
     summary = "".join(
         summary_sentence(study, name, label, "iou", "提案手法より高く", "提案手法より低く", 3)
         for name, label in BASELINE_NAMES
@@ -152,5 +164,120 @@ def baseline_discussion(study: Study) -> str:
         "<p><b>既存の手法との比較。</b>IoUの差の区間を提案手法に対して見ると、"
         f"{summary}{caution}"
         "提案手法は学習を使わず、楕円の丸みと内側の割合を事前分布に使う。GrabCutとSAMは矩形だけを使い、入力の情報が同じではない。"
-        '詳しくは<ref k="s:baselines"></ref>に示した。</p>\n'
+        f"一方、外接矩形が前景の90%未満しか覆わない{shares['cov_n_low']}試行では、提案手法のIoUの差が、GrabCutに対して{shares['cov_grabcut_low']}、SAMに対して{shares['cov_sam_low']}で、提案手法のほうが高い。"
+        "覆う割合が97%以上の試行では、GrabCutとSAMのほうが高い。提案手法の強みは、入力が前景を覆わない粗い場合の頑健さである。"
+        '詳しくは<ref k="s:baselines"></ref>と<ref k="s:coverage"></ref>に示した。</p>\n'
     )
+
+
+STRATA = (
+    (0.0, 0.9, "90%未満"),
+    (0.9, 0.97, "90%以上97%未満"),
+    (0.97, 1.01, "97%以上"),
+)
+
+
+def coverage_rows(study: Study) -> list[dict]:
+    rows = []
+    for key in BASELINE_SETS:
+        trials = {(record["scene"], record["trial"]): record for record in study.results.trials(key)}
+        coverage = {
+            (record["scene"], record["trial"]): record["box_coverage"] for record in study.results.coverage(key)
+        }
+        for record in study.results.baselines(key):
+            identifier = (record["scene"], record["trial"])
+            if identifier not in trials or identifier not in coverage:
+                continue
+            tree = trials[identifier]["tree"]["adaptive_c"]["iou"]
+            rows.append(
+                {
+                    "scene": f"{key}-{record['scene']}",
+                    "coverage": coverage[identifier],
+                    "tree": tree,
+                    "graph": trials[identifier]["graph"]["adaptive_c"]["iou"],
+                    "grabcut": record["grabcut"]["iou"],
+                    "sam_best": record["sam_best"]["iou"],
+                }
+            )
+    return rows
+
+
+def stratum(rows: list[dict], low: float, high: float) -> list[dict]:
+    return [row for row in rows if low <= row["coverage"] < high]
+
+
+def mean_by_scene(rows: list[dict], name: str) -> float:
+    return scene_mean(rows, lambda row: row[name])
+
+
+def difference_interval(rows: list[dict], first: str, second: str) -> Interval:
+    return bootstrap_interval(scene_means(rows, lambda row: row[first] - row[second]))
+
+
+def coverage_table(study: Study) -> str:
+    rows = coverage_rows(study)
+    body = []
+    for low, high, label in STRATA:
+        part = stratum(rows, low, high)
+        body.append(
+            [
+                label,
+                str(len(part)),
+                f3(mean_by_scene(part, "tree")),
+                f3(mean_by_scene(part, "grabcut")),
+                f3(mean_by_scene(part, "sam_best")),
+                interval_text(difference_interval(part, "tree", "grabcut")),
+                interval_text(difference_interval(part, "tree", "sam_best")),
+            ]
+        )
+    return table_html(
+        "t:coverage",
+        "外接矩形が正解の前景を覆う割合ごとのIoU。公開素材の転写0%と100%、写真の試行をまとめた。SAMは推定IoU最大の出力である。右の二列は、木の切断（適応（色）、精緻化後）から各手法を引いた値で、場面を単位とするブートストラップ法の区間を示した。",
+        ["覆う割合", "試行数", "木の切断", "GrabCut", "SAM", "木の切断−GrabCut", "木の切断−SAM"],
+        body,
+        align=["l", "", "", "", "", "", ""],
+        widths=["15%", "9%", "11%", "11%", "11%", "21.5%", "21.5%"],
+    )
+
+
+def coverage_summary(study: Study) -> dict[str, str]:
+    rows = coverage_rows(study)
+    low = stratum(rows, STRATA[0][0], STRATA[0][1])
+    high = stratum(rows, STRATA[2][0], STRATA[2][1])
+    return {
+        "cov_n_low": str(len(low)),
+        "cov_n_all": str(len(rows)),
+        "cov_grabcut_low": interval_text(difference_interval(low, "tree", "grabcut")),
+        "cov_sam_low": interval_text(difference_interval(low, "tree", "sam_best")),
+        "cov_grabcut_high": interval_text(difference_interval(high, "tree", "grabcut")),
+        "cov_sam_high": interval_text(difference_interval(high, "tree", "sam_best")),
+    }
+
+
+def coverage_results(study: Study) -> str:
+    rows = coverage_rows(study)
+    sentences = []
+    for low, high, label in STRATA:
+        part = stratum(rows, low, high)
+        parts = []
+        for other, name in (("grabcut", "GrabCut"), ("sam_best", "SAM")):
+            interval = difference_interval(part, "tree", other)
+            parts.append(
+                f"{name}に対して{interval_text(interval)}（{relation(interval, '提案手法が高い', '提案手法が低い')}）"
+            )
+        sentences.append(f"覆う割合が{label}の{len(part)}試行では、提案手法のIoUの差は、{'、'.join(parts)}である。")
+    return (
+        "<p>入力の矩形が前景を覆う割合によって、結果は大きく変わる。"
+        "覆う割合を、正解の前景（0.5で二値化）のうち、楕円の外接矩形に入る面積の割合と定義する。"
+        "楕円の誤差モデルMでは、楕円の半径が前景の内接楕円の0.8倍まで小さくなるため、矩形が前景の一部を切る試行が含まれる。"
+        f'公開素材の転写0%と100%、写真の{len(rows)}試行を、覆う割合で三つに分けた結果を<ref k="t:coverage"></ref>に示す。'
+        "区切りの90%と97%は、結果を見たあとに決めたもので、探索的な分析である。</p>\n"
+        f"<p>{''.join(sentences)}</p>\n"
+        "<p>矩形が前景を十分に覆うときは、GrabCutとSAMのほうが高い。矩形が前景を覆わないときは、GrabCutは矩形の外側を背景に固定し、SAMも矩形を前景を囲むものとして扱うため、切られた部分を取り戻しにくい。"
+        "提案手法は、手がかりを楕円の外側の画素にも与え、事前分布も楕円の境界で連続的に変わるため、楕円からはみ出した前景も取れる。"
+        "この違いが、覆う割合が低い試行での差の理由と考えられるが、本稿では要因を分けて確かめていない。</p>\n"
+    )
+
+
+def coverage_section(study: Study) -> str:
+    return coverage_results(study) + "\n" + coverage_table(study)

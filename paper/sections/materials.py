@@ -11,6 +11,7 @@ from ellipse_foreground.evaluation.sprites import CANVAS_HEIGHT, CANVAS_WIDTH
 from ellipse_foreground.settings import DEFAULT_SETTINGS
 from paper.numbers import plain
 from paper.results import PHOTO_SET, SETS
+from paper.sections.baselines import coverage_summary
 from paper.sections.closing import abstract
 from paper.study import Study
 from paper.table import table_html
@@ -100,4 +101,5 @@ def values(study: Study, data_root: Path) -> dict[str, str]:
         "m_tree": plain(DEFAULT_SETTINGS.boundary.strength),
         "lam_gc": plain(DEFAULT_SETTINGS.graph_cut.smoothness),
         "abstract": abstract(study),
+        **coverage_summary(study),
     }

@@ -88,6 +88,10 @@ class Results:
         subset = SUBSETS[key]
         return self._select("baselines", subset.group, subset)
 
+    def coverage(self, key: str) -> list[dict]:
+        subset = SUBSETS[key]
+        return self._select("coverage", subset.group, subset)
+
     def resolution_trials(self, key: str, width: int) -> list[dict]:
         subset = SUBSETS[key]
         return self._select("resolution", f"{subset.group}-{width}", subset)
