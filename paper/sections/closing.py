@@ -17,6 +17,7 @@ from paper.sections.refinement import (
     conclusion_refinement,
     discussion_refinement,
 )
+from paper.sections.stability import abstract_adaptation, conclusion_stability, discussion_stability
 from paper.study import Study, Timing
 
 SET_LABELS = {key: SUBSETS[key].short for key in SETS}
@@ -81,6 +82,7 @@ def abstract(study: Study) -> str:
         f"テクスチャのみと色とパッチのみの優劣は画像データセットで異なり、両者を併用する固定重みは六つのデータセットのすべてで最良の構成とのIoUの差が{ceil3(summary.mix_regret)}以内であった。信頼度に基づく色の重みの調整の効果は、IoUで最大{f3(summary.adaptive_effect)}と小さい。"
         f"{graph_cut_abstract(comparison)}{ratio}。"
         f"{abstract_refinement(study)}"
+        f"{abstract_adaptation(study)}"
     )
 
 
@@ -180,6 +182,7 @@ def discussion(study: Study) -> str:
         + graph_cut_discussion(study, comparison)
         + discussion_refinement(study)
         + holes_discussion(study)
+        + discussion_stability(study)
         + baseline_discussion(study)
         + '<h3 id="s:disc_threat">妥当性への脅威</h3>\n'
         '<p><b>合成による評価。</b>評価に使った画像は、立ち絵と背景を合成したものである。前景と背景は別の出自を持つため、実際の写真に比べて絵柄の違いが大きく、外観の手がかりに有利に働くと考えられる。写真の人物での評価は、PPM-100の100枚に限られる（<ref k="s:photo"></ref>）。前景と背景が連続する画像や、人物以外の被写体での結果は示していない。また、元の解像度の平坦さの手がかりは、一様な塗りの前景を前提にしており、写真では識別性能が低かったが、その理由は確かめていない。</p>\n'
@@ -187,7 +190,9 @@ def discussion(study: Study) -> str:
         f"<p><b>信頼区間の単位。</b>信頼区間は、場面を単位とする復元抽出で求めた。17体と公開素材では、同じ立ち絵から{SCENES_PER_SPRITE}場面を作っており、それらは互いに似ているため、区間が狭くなっている可能性がある。立ち絵1と立ち絵2はキャラクターが1体なので、立ち絵を単位にした区間は求められない。{sprite_level_sentence(study)}</p>\n"
         "<p><b>開発用のデータセットと定数の選択。</b>立ち絵1と17体は、手法の設計と定数の選択に使った。選択した定数のうち、境界項の倍率とグラフカットの \\(\\lambda\\) は、最適値がデータセットにより大きく異なる。既定の事前分布の内側の縮小率も、最適値がデータセットにより異なる。"
         f"{held_out_text}立ち絵2は立ち絵1と同じキャラクターの髪型違いで、絵柄が共通するため、立ち絵1に対する独立性は低い。背景も8種にすぎない。公開素材の立ち絵17枚のうち12枚は同じ作者の7セットで、絵柄が近い。結果の一般性は限られる。17体のデータセットは、本稿の実験の前に行った探索でも使っており、その影響を完全には切り離せない。"
-        "帯の半径と強さ、手がかりの一致度の倍率は、立ち絵1、17体、写真の25枚で選んだ値で、写真は番号が4で割り切れるものを開発用に使った。</p>\n"
+        "帯の半径と強さ、手がかりの一致度の倍率は、立ち絵1、17体、写真の25枚で選んだ値で、写真は番号が4で割り切れるものを開発用に使った。"
+        "楕円の再推定の方法と、安定性の閾値は、これらに加えて、立ち絵2と、公開素材の場面番号が3で割り切れる場面での結果を見てから選んだ。そのため、これらの行は、この段階の評価では選択と独立ではない。"
+        "選択に使っていない場面は、公開素材の残りの場面と、写真のうち番号が4で割り切れないものである。再推定の評価の最終行は、これらを合わせた結果である。</p>\n"
         '<p><b>楕円の誤差モデル。</b>利用者の楕円の誤差は、正解の外接矩形から作った楕円に、倍率と中心のずれを一様乱数で加える模擬である。実際の操作で生じる誤差の分布や、系統的な偏りとは異なる可能性がある。事前分布の内側の縮小率は、誤差モデルMでの楕円の内側の割合に依存する（<ref k="s:abl_prior"></ref>）。誤差モデルを変えた結果は<ref k="s:abl_noise"></ref>に示したが、実際の利用者の操作は評価していない。</p>\n'
         "<p><b>描画の簡略化。</b>ぼかし描画は、円板の点拡がり関数による均一なぼかしである。深度に応じた変化や、明るい光源の広がりは扱っておらず、MAEはこの描画に対する値である。</p>\n"
         '<p><b>外部の手法との比較。</b>GrabCutと、学習済みの分割モデルSAM<cite k="kirillov2023"></cite>のViT-B版との比較は、公開素材と写真に限り、入力は楕円の外接矩形である。提案手法とは入力の情報が同じではない。SAMの他の版や派生、マッティングのモデル、LooseCutやDeep GrabCutとは比較しておらず、これらのモデルは、本稿の手法より高い精度を出す可能性がある。外接矩形が前景を覆う割合ごとの比較は、層を分ける閾値を結果を見たあとに決めており、別のデータでは確かめていない。</p>\n'
@@ -219,6 +224,6 @@ def conclusion(study: Study) -> str:
         f"<p>デンドログラムの上の切断により、楕円をそのまま使う場合のIoUを、{f2(summary.ellipse_low)}〜{f2(summary.ellipse_high)}から、適応（色）の構成で{f2(summary.adaptive_low)}〜{f2(summary.adaptive_high)}に上げた。元の解像度の平坦さを使うテクスチャの手がかりは、色転写で色とパッチの手がかりの識別性能が下がる合成画像で有効であり、立ち絵1の全12条件でIoUが{f3(study.mean('sprite1', 'tex'))}になった。"
         f"一方、17体の転写0%では、色とパッチのみがテクスチャのみを上回る。両者の優劣はデータセットにより異なるが、併用する固定重みは、設計に使っていないデータセットを含むすべてのデータセットで、最良との差を{ceil3(summary.mix_regret)}以内に抑えた。</p>\n"
         f"<p>楕円の内側と外側の分布のバタチャリヤ係数は、テクスチャと色の識別性能と対応した（順位相関 {signed(correlations['texture'].pooled, 2)}、{signed(correlations['color'].pooled, 2)}）。しかし、係数に基づく色の重みの調整が固定重みに与える効果は、IoUで最大{f3(summary.adaptive_effect)}と小さかった。"
-        f"境界項の形は、強さを調整すれば精度が同程度になり、{largest_drop_form(study)}は倍率を大きくしたときの低下が最も大きかった。{graph_text}{conclusion_refinement(study)}</p>\n"
+        f"境界項の形は、強さを調整すれば精度が同程度になり、{largest_drop_form(study)}は倍率を大きくしたときの低下が最も大きかった。{graph_text}{conclusion_refinement(study)}{conclusion_stability(study)}</p>\n"
         "<p>本稿の評価は、合成画像と、写真の人物100枚に限られ、学習済みモデルとの比較は、SAMのViT-B版に矩形を与えた場合に限る。GrabCutとSAMとの比較では、提案手法が全体として上回るとは言えない。覆う割合が大きいほど提案手法に有利な差は小さくなり、信頼区間が0を含まずに上回ったのは、楕円の外接矩形が前景の90%未満しか覆わない場合だけであり、この90%は結果を見たあとに決めた閾値である。写真の人物のより多くの画像での評価と、境界付近の画素に対応づけた信頼度が、今後の課題である。</p>\n"
     )

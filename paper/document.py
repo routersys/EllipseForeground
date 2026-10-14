@@ -26,6 +26,7 @@ from paper.sections.main import main_section
 from paper.sections.materials import data_table, values
 from paper.sections.qualitative import qualitative_section, qualitative_text
 from paper.sections.refinement import refinement_section
+from paper.sections.stability import stability_section
 from paper.study import Study
 
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -66,6 +67,8 @@ def ablation_sections(study: Study) -> str:
         + finish_section(study)
         + '\n<h3 id="s:abl_noise">楕円の誤差の大きさ</h3>\n'
         + models_section(study)
+        + '\n<h3 id="s:abl_stab">楕円の摂動に対する安定性と再推定</h3>\n'
+        + stability_section(study)
         + '\n<h3 id="s:qual">定性的な結果</h3>\n'
         + qualitative_section(qualitative_text(study))
     )

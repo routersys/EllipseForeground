@@ -14,6 +14,7 @@ from paper.results import PHOTO_SET, SETS
 from paper.sections.baselines import coverage_summary
 from paper.sections.closing import abstract
 from paper.sections.refinement import refinement_summary
+from paper.sections.stability import adaptation_summary, intro_stability
 from paper.study import Study
 from paper.table import table_html
 
@@ -104,4 +105,6 @@ def values(study: Study, data_root: Path) -> dict[str, str]:
         "abstract": abstract(study),
         **coverage_summary(study),
         **refinement_summary(study),
+        **adaptation_summary(study),
+        "stab_item": intro_stability(study),
     }

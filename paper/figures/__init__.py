@@ -5,6 +5,7 @@ from paper.figures.overview import overview_figure, texture_cues
 from paper.figures.plots import bars_plot, boundary_plot, dose_plot, scatter_plot
 from paper.figures.qualitative import comparison_figure, render_figure
 from paper.figures.samples import public_samples
+from paper.figures.stability import stability_plot
 from paper.figures.style import configure
 from paper.study import Study
 
@@ -19,6 +20,7 @@ def build_figures(study: Study, data_root: Path, directory: Path) -> None:
     dose_plot(study, directory)
     scatter_plot(study, directory)
     boundary_plot(study, directory)
+    stability_plot(study, directory)
     bars_plot(study, directory)
     comparison_figure(directory, data_root, study.results)
     render_figure(directory, data_root, study.results)

@@ -39,7 +39,7 @@ def test_sections_are_numbered_in_order(page):
 def test_all_tables_and_figures_are_captioned(page):
     html, _ = page
     assert len(re.findall(r'<span class="no">表\d+</span>', html)) >= 12
-    assert len(re.findall(r'<span class="no">図\d+</span>', html)) == 11
+    assert len(re.findall(r'<span class="no">図\d+</span>', html)) == 12
     assert 'class="no">表</span>' not in html
 
 
@@ -49,10 +49,14 @@ def test_citations_are_listed_in_the_bibliography(page):
     assert html.count('<li><span class="n">[') == len(order)
 
 
-def test_the_holes_section_is_present(page):
-    html, _ = page
-    assert "帯の再判定と穴埋めの比較" in html
-    assert 'id="t:holes"' in html
+def test_the_added_sections_are_present(page):
+    html, order = page
+    for heading in ("帯の再判定と穴埋めの比較", "楕円の摂動に対する安定性と再推定"):
+        assert heading in html
+    for table in ("t:holes", "t:stab", "t:refit"):
+        assert f'id="{table}"' in html
+    assert "slabaugh2005" in order and "germani2026" in order and "moskalenko2026" in order
+    assert "Slabaugh" in html
 
 
 def test_timing_ratio_is_stated_in_text(page):

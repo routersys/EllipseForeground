@@ -7,6 +7,7 @@ from paper.figures.diagrams import leaves_under, solve_example
 from paper.figures.overview import region_labels, tree_mosaic
 from paper.figures.plots import bars_plot, boundary_plot, dose_plot, scatter_plot
 from paper.figures.qualitative import crop_box, error_picture
+from paper.figures.stability import stability_plot
 from paper.figures.style import configure
 from paper.results import Results
 from paper.study import Study
@@ -58,7 +59,7 @@ def test_result_plots_are_written(tmp_path):
     write_results(tmp_path / "results")
     study = Study(Results(tmp_path / "results"), None)
     configure()
-    for plot in (dose_plot, scatter_plot, boundary_plot, bars_plot):
+    for plot in (dose_plot, scatter_plot, boundary_plot, stability_plot, bars_plot):
         plot(study, tmp_path / "figs")
     names = {path.name for path in (tmp_path / "figs").iterdir()}
-    assert {"fig_dose.png", "fig_scatter.svg", "fig_reg.svg", "fig_bars.png"} <= names
+    assert {"fig_dose.png", "fig_scatter.svg", "fig_reg.svg", "fig_stab.svg", "fig_bars.png"} <= names

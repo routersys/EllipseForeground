@@ -44,5 +44,8 @@
   "collins2005": "R. T. Collins, Y. Liu, and M. Leordeanu, “Online selection of discriminative tracking features,” <i>IEEE Trans. Pattern Anal. Mach. Intell.</i>, vol. 27, no. 10, pp. 1631–1643, 2005. doi:10.1109/TPAMI.2005.205",
   "li2023": "J. Li, J. Jain, and H. Shi, “Matting Anything,” arXiv:2306.05399, 2023.",
   "ke2022": "Z. Ke, J. Sun, K. Li, Q. Yan, and R. W. H. Lau, “MODNet: Real-time trimap-free portrait matting via objective decomposition,” in <i>Proc. AAAI Conf. Artificial Intelligence</i>, vol. 36, no. 1, pp. 1140–1147, 2022. doi:10.1609/aaai.v36i1.19999",
-  "lombaert2005": "H. Lombaert, Y. Sun, L. Grady, and C. Xu, “A multilevel banded graph cuts method for fast image segmentation,” in <i>Proc. IEEE Int. Conf. Computer Vision (ICCV)</i>, vol. 1, pp. 259–265, 2005. doi:10.1109/ICCV.2005.13"
+  "lombaert2005": "H. Lombaert, Y. Sun, L. Grady, and C. Xu, “A multilevel banded graph cuts method for fast image segmentation,” in <i>Proc. IEEE Int. Conf. Computer Vision (ICCV)</i>, vol. 1, pp. 259–265, 2005. doi:10.1109/ICCV.2005.13",
+  "slabaugh2005": "G. Slabaugh and G. Unal, “Graph cuts segmentation using an elliptical shape prior,” in <i>Proc. IEEE Int. Conf. Image Processing (ICIP)</i>, vol. 2, pp. 1222–1225, 2005. doi:10.1109/ICIP.2005.1530282",
+  "moskalenko2026": "A. Moskalenko, D. Kuznetsov, I. Dudko, A. Iasakova, N. Boldyrev, D. Shepelev, A. Spiridonov, A. Kuznetsov, and V. Shakhuro, “BREPS: Bounding-box robustness evaluation of promptable segmentation,” arXiv:2601.15123, 2026.",
+  "germani2026": "E. Germani, K. Nyangoh-Timoh, P. Jannin, and J. S. H. Baxter, “Disentangling prompt dependence to evaluate segmentation reliability in gynecological MRI,” arXiv:2603.13369, 2026."
 }

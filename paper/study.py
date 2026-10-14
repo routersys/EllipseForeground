@@ -1,6 +1,8 @@
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from ellipse_foreground.evaluation.statistics import Interval
 from paper.numbers import interval_text
@@ -60,6 +62,12 @@ class Study:
         self.results = results
         self.measure = Measure(results)
         self.timing = timing
+        self.cache: dict[str, Any] = {}
+
+    def remembered(self, name: str, compute: Callable[[], Any]) -> Any:
+        if name not in self.cache:
+            self.cache[name] = compute()
+        return self.cache[name]
 
     def mean(self, key: str, method: str, quantity: str = "iou", family: str = TREE) -> float:
         return self.measure.mean(key, method, quantity, family)
