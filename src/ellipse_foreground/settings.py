@@ -109,6 +109,13 @@ class BandSettings:
 
 
 @dataclass(frozen=True)
+class StabilitySettings:
+    scales: tuple[float, ...] = (0.8, 1.25)
+    shift: float = 0.12
+    threshold: float = 0.95
+
+
+@dataclass(frozen=True)
 class AgreementSettings:
     gain: float = 3.0
     floor: float = 0.2
@@ -129,6 +136,7 @@ class Settings:
     graph_cut: GraphCutSettings = GraphCutSettings()
     band: BandSettings = BandSettings()
     agreement: AgreementSettings = AgreementSettings()
+    stability: StabilitySettings = StabilitySettings()
 
 
 DEFAULT_SETTINGS = Settings()

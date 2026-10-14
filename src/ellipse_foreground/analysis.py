@@ -16,6 +16,7 @@ from ellipse_foreground.graph_cut import graph_cut_labels
 from ellipse_foreground.prior import ellipse_prior
 from ellipse_foreground.reliability import Overlaps, measure_overlaps
 from ellipse_foreground.settings import DEFAULT_SETTINGS, BoundaryForm, Settings
+from ellipse_foreground.stability import jaccard, perturbed_ellipses
 from ellipse_foreground.tree import build_tree, leaf_sums
 from ellipse_foreground.weights import CueWeights, Mix, weights_for
 from ellipse_foreground.work import reduce_image
@@ -121,8 +122,17 @@ class Analysis:
     def finish(self, mask: np.ndarray) -> np.ndarray:
         return self.finisher(mask.astype(np.float32))
 
-    def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR, refine: bool = False) -> np.ndarray:
+    def solve(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR) -> tuple[np.ndarray, np.ndarray]:
         regions = self.regions(ellipse)
         weights = weights_for(mix, self.overlaps(regions), self.settings.weights)
         scores = self.cue_maps(ellipse, regions).scores(weights)
-        return self.finish(self.band_cut(scores) if refine else self.cut(scores))
+        return scores, self.cut(scores)
+
+    def stability(self, ellipse: Ellipse, scores: np.ndarray, mask: np.ndarray) -> float:
+        appearance = scores - self.prior_map(ellipse)
+        perturbed = perturbed_ellipses(ellipse, self.settings.stability)
+        return float(np.mean([jaccard(mask, self.cut(self.prior_map(other) + appearance)) for other in perturbed]))
+
+    def extract(self, ellipse: Ellipse, mix: Mix = Mix.ADAPTIVE_COLOR, refine: bool = False) -> np.ndarray:
+        scores, mask = self.solve(ellipse, mix)
+        return self.finish(self.band_cut(scores, mask) if refine else mask)
