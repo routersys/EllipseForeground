@@ -55,6 +55,19 @@ async function wait(page, predicate, argument, timeout = 40000) {
 
 const rendered = () => document.querySelectorAll("#viewer canvas").length > 0 && document.querySelectorAll("#viewer .textLayer span").length > 0;
 
+async function settled(page) {
+  let previous = -1;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const length = await page.evaluate(() => [...document.querySelectorAll("#viewer .textLayer")].map((layer) => layer.textContent).join("").length);
+    if (length === previous) {
+      return;
+    }
+    previous = length;
+    await new Promise((done) => setTimeout(done, 300));
+  }
+  throw new Error("テキスト層の描画が終わらない");
+}
+
 for (const [language, path, searchTerm] of [
   ["en", "paper/", "デンドログラム"],
   ["ja", "ja/paper/", "デンドログラム"],
@@ -84,6 +97,7 @@ for (const [language, path, searchTerm] of [
   });
   check(ink > 2000, `${language}: 1 ページ目の canvas に文字が描かれる (暗い画素 ${ink})`);
 
+  await settled(page);
   const text = await page.evaluate(() => [...document.querySelectorAll("#viewer .textLayer")].map((layer) => layer.textContent).join(""));
   check(text.includes("楕円"), `${language}: テキスト層から本文を読める`);
   check(!/[\u2E80-\u2FDF]/.test(text), `${language}: テキスト層に康熙部首が残らない`);
