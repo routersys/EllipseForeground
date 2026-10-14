@@ -103,5 +103,5 @@ def render(study: Study, data_root: Path) -> tuple[str, list[str]]:
     html, order = resolve_citations(html)
     references = json.loads(read_source("references.json"))
     page = read_source("front.html").replace("<<BODY>>", html + "\n" + bibliography(order, references))
-    page = fill_tokens(page, text_values, {})
+    page = fill_tokens(page, {**text_values, "abstract": tidy(text_values["abstract"])}, {})
     return mathml.convert(page), order

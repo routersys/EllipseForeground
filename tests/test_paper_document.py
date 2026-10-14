@@ -66,3 +66,9 @@ def test_document_without_timing_omits_the_ratio(tmp_path):
     html, _ = render(Study(Results(tmp_path), None), DATA)
     assert "分の1" not in html
     assert "Dinic" not in html
+
+
+def test_the_abstract_uses_the_minus_sign(page):
+    html, _ = page
+    abstract = re.search(r'<div class="abstract">(.*?)</div>', html, re.S).group(1)
+    assert not re.search(r"(?<![A-Za-z0-9.\-])-[0-9]", abstract)
