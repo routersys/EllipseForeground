@@ -6,7 +6,7 @@ import numpy as np
 from ellipse_foreground.evaluation.experiments.refinement import BAND_RADII, BAND_SMOOTHNESS
 from ellipse_foreground.evaluation.statistics import Interval, bootstrap_interval, scene_means
 from ellipse_foreground.settings import DEFAULT_SETTINGS
-from paper.numbers import f2, f3, interval_text, percent, plain, signed
+from paper.numbers import f2, f3, interval_text, plain, signed
 from paper.results import PHOTO_SET, SETS, SUBSETS, scene_mean
 from paper.sections.baselines import classify
 from paper.study import Study
@@ -349,7 +349,7 @@ def timing_text(study: Study, rows: dict[str, list[dict]]) -> str:
         f"<p>最小カットの計算時間を、幅256の画像（\\(N\\) は{timing.pixel_count}）の{timing.instances}場面で測った。"
         f"同じ問題を、KolmogorovによるC++の実装を呼び出す{timing.boykov_kolmogorov_library}で解き、maxflowの呼び出しだけの時間を、"
         f"全画素のグラフと、半径{timing.band_radius}の帯のグラフで比べた。"
-        f"帯の画素数は \\(N\\) の平均{100 * timing.band_share:.1f}%で、1回あたりの中央値は、全画素が{timing.band_full_ms:.2f}ミリ秒、"
+        f"計時に使った問題では、帯の画素数は \\(N\\) の平均{100 * timing.band_share:.1f}%で、1回あたりの中央値は、全画素が{timing.band_full_ms:.2f}ミリ秒、"
         f"帯が{timing.band_ms:.2f}ミリ秒で、約{timing.band_speedup:.1f}分の1である。"
         "帯の再判定には、木の切断の計算に加えて、帯のグラフの構築と、辺の重みの計算が必要で、この時間は含めていない。</p>"
     )
@@ -500,7 +500,7 @@ def refinement_summary(study: Study) -> dict[str, str]:
     return {
         "band_radius": plain(DEFAULT_SETTINGS.band.radius),
         "band_lambda": plain(DEFAULT_SETTINGS.band.smoothness),
-        "band_share": percent(band_mean_share(study, rows)),
+        "band_share": f"{100 * band_mean_share(study, rows):.1f}%",
         "band_low": signed(min(interval.mean for interval in differences.values())),
         "band_high": signed(max(interval.mean for interval in differences.values())),
         "band_item": intro_item(study),
